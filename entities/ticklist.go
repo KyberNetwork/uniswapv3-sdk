@@ -111,6 +111,13 @@ func NextInitializedTickWithinOneWord(ticks []Tick, tick int, lte bool, tickSpac
 	}
 }
 
+func NextInitializedTickIndex(ticks []Tick, tick int, lte bool) (int, bool) {
+	index := NextInitializedTick(ticks, tick, lte).Index
+
+	// The found tick is surely initialized
+	return index, true
+}
+
 // utils
 
 func isTicksSorted(ticks []Tick) bool {
