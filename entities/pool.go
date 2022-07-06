@@ -217,14 +217,14 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 	}
 
 	if zeroForOne {
-		if sqrtPriceLimitX96.Cmp(utils.MinSqrtRatio) <= 0 {
+		if sqrtPriceLimitX96.Cmp(utils.MinSqrtRatio) < 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooLow
 		}
 		if sqrtPriceLimitX96.Cmp(p.SqrtRatioX96) >= 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooHigh
 		}
 	} else {
-		if sqrtPriceLimitX96.Cmp(utils.MaxSqrtRatio) >= 0 {
+		if sqrtPriceLimitX96.Cmp(utils.MaxSqrtRatio) > 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooHigh
 		}
 		if sqrtPriceLimitX96.Cmp(p.SqrtRatioX96) <= 0 {
