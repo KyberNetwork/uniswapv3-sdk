@@ -6,13 +6,13 @@ import (
 	"errors"
 	"math/big"
 
-	core "github.com/KyberNetwork/uniswap-sdk-core/entities"
+	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/KyberNetwork/uniswapv3-sdk/constants"
-	"github.com/KyberNetwork/uniswapv3-sdk/entities"
-	"github.com/KyberNetwork/uniswapv3-sdk/utils"
+	"github.com/piavgh/uniswapv3-sdk/constants"
+	"github.com/piavgh/uniswapv3-sdk/entities"
+	"github.com/piavgh/uniswapv3-sdk/utils"
 )
 
 //go:embed contracts/interfaces/INonfungiblePositionManager.sol/INonfungiblePositionManager.json

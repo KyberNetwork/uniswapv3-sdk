@@ -6,7 +6,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/KyberNetwork/uniswapv3-sdk/constants"
+	"github.com/piavgh/uniswapv3-sdk/constants"
 )
 
 func TestGetSqrtRatioAtTick(t *testing.T) {

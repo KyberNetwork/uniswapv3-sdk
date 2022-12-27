@@ -5,7 +5,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/KyberNetwork/uniswapv3-sdk/utils"
+	"github.com/piavgh/uniswapv3-sdk/utils"
 )
 
 func TestNearestUsableTick(t *testing.T) {

@@ -3,7 +3,7 @@ package utils
 import (
 	"math/big"
 
-	"github.com/KyberNetwork/uniswapv3-sdk/constants"
+	"github.com/piavgh/uniswapv3-sdk/constants"
 )
 
 var MaxFee = new(big.Int).Exp(big.NewInt(10), big.NewInt(6), nil)

@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
-	"github.com/KyberNetwork/uniswap-sdk-core/entities"
+	"github.com/daoleno/uniswap-sdk-core/entities"
 
-	"github.com/KyberNetwork/uniswapv3-sdk/constants"
+	"github.com/piavgh/uniswapv3-sdk/constants"
 )
 
 var ErrInvalidInput = errors.New("invalid input")

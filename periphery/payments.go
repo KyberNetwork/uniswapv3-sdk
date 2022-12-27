@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"math/big"
 
-	"github.com/KyberNetwork/uniswap-sdk-core/entities"
+	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )

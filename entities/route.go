@@ -3,7 +3,7 @@ package entities
 import (
 	"errors"
 
-	"github.com/KyberNetwork/uniswap-sdk-core/entities"
+	"github.com/daoleno/uniswap-sdk-core/entities"
 )
 
 var (
