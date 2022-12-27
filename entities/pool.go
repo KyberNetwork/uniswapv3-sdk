@@ -258,7 +258,7 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		// because each iteration of the while loop rounds, we can't optimize this code (relative to the smart contract)
 		// by simply traversing to the next available tick, we instead need to exactly replicate
 		// tickBitmap.nextInitializedTickWithinOneWord
-		step.tickNext, step.initialized = p.TickDataProvider.NextInitializedTickIndex(state.tick, zeroForOne)
+		step.tickNext, step.initialized = p.TickDataProvider.NextInitializedTickWithinOneWord(state.tick, zeroForOne, p.tickSpacing())
 
 		if step.tickNext < utils.MinTick {
 			step.tickNext = utils.MinTick
