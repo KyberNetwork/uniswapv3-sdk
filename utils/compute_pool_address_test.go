@@ -4,10 +4,9 @@ import (
 	"testing"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
+	"github.com/daoleno/uniswapv3-sdk/constants"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/piavgh/uniswapv3-sdk/constants"
 )
 
 func TestComputePoolAddress(t *testing.T) {

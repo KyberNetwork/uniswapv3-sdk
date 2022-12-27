@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/daoleno/uniswap-sdk-core v0.1.2
-	github.com/piavgh/uniswapv3-sdk v0.2.1
+	github.com/daoleno/uniswapv3-sdk v0.2.0
 	github.com/ethereum/go-ethereum v1.10.15
 )
 

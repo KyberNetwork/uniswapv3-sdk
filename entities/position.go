@@ -5,9 +5,8 @@ import (
 	"math/big"
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
-
-	"github.com/piavgh/uniswapv3-sdk/constants"
-	"github.com/piavgh/uniswapv3-sdk/utils"
+	"github.com/daoleno/uniswapv3-sdk/constants"
+	"github.com/daoleno/uniswapv3-sdk/utils"
 )
 
 var (

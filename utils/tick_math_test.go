@@ -4,9 +4,8 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/daoleno/uniswapv3-sdk/constants"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/piavgh/uniswapv3-sdk/constants"
 )
 
 func TestGetSqrtRatioAtTick(t *testing.T) {

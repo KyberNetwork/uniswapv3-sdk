@@ -1,4 +1,4 @@
-module github.com/piavgh/uniswapv3-sdk/examples/quoter
+module github.com/daoleno/uniswapv3-sdk/examples/quoter
 
 go 1.17
 

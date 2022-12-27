@@ -3,7 +3,7 @@ package utils
 import (
 	"math/big"
 
-	"github.com/piavgh/uniswapv3-sdk/constants"
+	"github.com/daoleno/uniswapv3-sdk/constants"
 )
 
 func AddDelta(x, y *big.Int) *big.Int {

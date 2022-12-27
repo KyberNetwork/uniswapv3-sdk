@@ -87,8 +87,6 @@ github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ3
 github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c/go.mod h1:GyV+0YP4qX0UQ7r2MoYZ+AvYDp12OF5yg4q8rGnyNh4=
 github.com/daoleno/uniswap-sdk-core v0.1.2 h1:ezoUlsMehyS0iE9uI4MvJG/8HI4+INrJ3uxhFBiG6IM=
 github.com/daoleno/uniswap-sdk-core v0.1.2/go.mod h1:kVVHaxqCY/FH8KSj441D/gf8oFn8J+oGlauLTRyzTF4=
-github.com/daoleno/uniswapv3-sdk v0.2.0 h1:o8/pv/4sUtN/sc2m8D1Fc5S69yLN4rmjMo5PQrKj+zY=
-github.com/daoleno/uniswapv3-sdk v0.2.0/go.mod h1:wJyrYY9869XGQvycpO5c/MKGaClxEga9zHZ+FjLyfWI=
 github.com/dave/jennifer v1.2.0/go.mod h1:fIb+770HOpJ2fmN9EPPKOqm1vMGhB+TwXKMZhrIygKg=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

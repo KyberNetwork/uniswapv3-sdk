@@ -1,4 +1,4 @@
-module github.com/piavgh/uniswapv3-sdk
+module github.com/daoleno/uniswapv3-sdk
 
 go 1.17
 
