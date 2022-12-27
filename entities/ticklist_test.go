@@ -35,21 +35,14 @@ func TestValidateList(t *testing.T) {
 
 func TestIsBelowSmallest(t *testing.T) {
 	result := []Tick{lowTick, midTick, highTick}
-	isBelowSmallest1, _ := IsBelowSmallest(result, utils.MinTick)
-	assert.True(t, isBelowSmallest1)
-
-	isBelowSmallest2, _ := IsBelowSmallest(result, utils.MinTick+1)
-	assert.False(t, isBelowSmallest2)
+	assert.True(t, IsBelowSmallest(result, utils.MinTick))
+	assert.False(t, IsBelowSmallest(result, utils.MinTick+1))
 }
 
 func TestIsAtOrAboveSmallest(t *testing.T) {
 	result := []Tick{lowTick, midTick, highTick}
-
-	isAtOrAboveLargest1, _ := IsAtOrAboveLargest(result, utils.MaxTick-2)
-	assert.False(t, isAtOrAboveLargest1)
-
-	isAtOrAboveLargest2, _ := IsAtOrAboveLargest(result, utils.MaxTick-1)
-	assert.True(t, isAtOrAboveLargest2)
+	assert.False(t, IsAtOrAboveLargest(result, utils.MaxTick-2))
+	assert.True(t, IsAtOrAboveLargest(result, utils.MaxTick-1))
 }
 
 func TestNextInitializedTick(t *testing.T) {
@@ -81,18 +74,12 @@ func TestNextInitializedTick(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			nextInitializedTick, _ := NextInitializedTick(tt.args.ticks, tt.args.tick, tt.args.lte)
-			assert.Equal(t, tt.want, nextInitializedTick)
+			assert.Equal(t, tt.want, NextInitializedTick(tt.args.ticks, tt.args.tick, tt.args.lte))
 		})
 	}
 
-	nextInitializedTick1, err1 := NextInitializedTick(ticks, utils.MinTick, true)
-	assert.Zero(t, nextInitializedTick1, "below smallest")
-	assert.ErrorIs(t, err1, ErrBelowSmallest)
-
-	nextInitializedTick2, err2 := NextInitializedTick(ticks, utils.MaxTick-1, false)
-	assert.Zero(t, nextInitializedTick2, "at or above largest")
-	assert.ErrorIs(t, err2, ErrAtOrAboveLargest)
+	assert.Panics(t, func() { NextInitializedTick(ticks, utils.MinTick, true) }, "blow smallest")
+	assert.Panics(t, func() { NextInitializedTick(ticks, utils.MaxTick-1, false) }, "at or above largest")
 }
 
 func TestNextInitializedTickWithinOneWord(t *testing.T) {
@@ -136,7 +123,7 @@ func TestNextInitializedTickWithinOneWord(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got0, got1, _ := NextInitializedTickWithinOneWord(tt.args.ticks, tt.args.tick, tt.args.lte, tt.args.tickSpacing)
+			got0, got1 := NextInitializedTickWithinOneWord(tt.args.ticks, tt.args.tick, tt.args.lte, tt.args.tickSpacing)
 			assert.Equal(t, tt.want0, got0)
 			assert.Equal(t, tt.want1, got1)
 		})
