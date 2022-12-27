@@ -56,12 +56,10 @@ func IsAtOrAboveLargest(ticks []Tick, tick int) bool {
 }
 
 func GetTick(ticks []Tick, index int) Tick {
-	tickIndex := binarySearch(ticks, index)
-	if tickIndex < 0 {
+	tick := ticks[binarySearch(ticks, index)]
+	if tick.Index <= 0 {
 		panic("invalid tick index")
 	}
-	tick := ticks[tickIndex]
-
 	return tick
 }
 
