@@ -6,11 +6,24 @@ import (
 	"math/big"
 )
 
+const (
+	ZeroValueTickIndex       = 0
+	ZeroValueTickInitialized = false
+)
+
 var (
 	ErrZeroTickSpacing    = errors.New("tick spacing must be greater than 0")
 	ErrInvalidTickSpacing = errors.New("invalid tick spacing")
 	ErrZeroNet            = errors.New("tick net delta must be zero")
 	ErrSorted             = errors.New("ticks must be sorted")
+	ErrEmptyTickList      = errors.New("empty tick list")
+	ErrBelowSmallest      = errors.New("below smallest")
+	ErrAtOrAboveLargest   = errors.New("at or above largest")
+	ErrInvalidTickIndex   = errors.New("invalid tick index")
+)
+
+var (
+	EmptyTick = Tick{}
 )
 
 func ValidateList(ticks []Tick, tickSpacing int) error {
@@ -41,72 +54,146 @@ func ValidateList(ticks []Tick, tickSpacing int) error {
 	return nil
 }
 
-func IsBelowSmallest(ticks []Tick, tick int) bool {
+func IsBelowSmallest(ticks []Tick, tick int) (bool, error) {
 	if len(ticks) == 0 {
-		panic("empty tick list")
+		return true, ErrEmptyTickList
 	}
-	return tick < ticks[0].Index
+
+	return tick < ticks[0].Index, nil
 }
 
-func IsAtOrAboveLargest(ticks []Tick, tick int) bool {
+func IsAtOrAboveLargest(ticks []Tick, tick int) (bool, error) {
 	if len(ticks) == 0 {
-		panic("empty tick list")
+		return true, ErrEmptyTickList
 	}
-	return tick >= ticks[len(ticks)-1].Index
+
+	return tick >= ticks[len(ticks)-1].Index, nil
 }
 
-func GetTick(ticks []Tick, index int) Tick {
-	tick := ticks[binarySearch(ticks, index)]
-	if tick.Index != index {
-		panic("index is not contained in ticks")
+func GetTick(ticks []Tick, index int) (Tick, error) {
+	tickIndex, err := binarySearch(ticks, index)
+	if err != nil {
+		return EmptyTick, err
 	}
-	return tick
+
+	if tickIndex < 0 {
+		return EmptyTick, ErrInvalidTickIndex
+	}
+
+	tick := ticks[tickIndex]
+
+	return tick, nil
 }
 
-func NextInitializedTick(ticks []Tick, tick int, lte bool) Tick {
+func NextInitializedTick(ticks []Tick, tick int, lte bool) (Tick, error) {
 	if lte {
-		if IsBelowSmallest(ticks, tick) {
-			panic("below smallest")
+		isBelowSmallest, err := IsBelowSmallest(ticks, tick)
+		if err != nil {
+			return EmptyTick, err
 		}
-		if IsAtOrAboveLargest(ticks, tick) {
-			return ticks[len(ticks)-1]
+
+		if isBelowSmallest {
+			return EmptyTick, ErrBelowSmallest
 		}
-		index := binarySearch(ticks, tick)
-		return ticks[index]
+
+		isAtOrAboveLargest, err := IsAtOrAboveLargest(ticks, tick)
+		if err != nil {
+			return EmptyTick, err
+		}
+
+		if isAtOrAboveLargest {
+			return ticks[len(ticks)-1], nil
+		}
+
+		index, err := binarySearch(ticks, tick)
+		if err != nil {
+			return EmptyTick, err
+		}
+
+		return ticks[index], nil
 	} else {
-		if IsAtOrAboveLargest(ticks, tick) {
-			panic("at or above largest")
+		isAtOrAboveLargest, err := IsAtOrAboveLargest(ticks, tick)
+		if err != nil {
+			return EmptyTick, err
 		}
-		if IsBelowSmallest(ticks, tick) {
-			return ticks[0]
+
+		if isAtOrAboveLargest {
+			return EmptyTick, ErrAtOrAboveLargest
 		}
-		index := binarySearch(ticks, tick)
-		return ticks[index+1]
+
+		isBelowSmallest, err := IsBelowSmallest(ticks, tick)
+
+		if err != nil {
+			return EmptyTick, err
+		}
+
+		if isBelowSmallest {
+			return ticks[0], nil
+		}
+
+		index, err := binarySearch(ticks, tick)
+		if err != nil {
+			return EmptyTick, err
+		}
+
+		return ticks[index+1], nil
 	}
 }
 
-func NextInitializedTickWithinOneWord(ticks []Tick, tick int, lte bool, tickSpacing int) (int, bool) {
+func NextInitializedTickWithinOneWord(ticks []Tick, tick int, lte bool, tickSpacing int) (int, bool, error) {
 	compressed := math.Floor(float64(tick) / float64(tickSpacing)) // matches rounding in the code
 
 	if lte {
 		wordPos := int(compressed) >> 8
 		minimum := (wordPos << 8) * tickSpacing
-		if IsBelowSmallest(ticks, tick) {
-			return minimum, false
+		isBelowSmallest, err := IsBelowSmallest(ticks, tick)
+		if err != nil {
+			return ZeroValueTickIndex, ZeroValueTickInitialized, err
 		}
-		index := NextInitializedTick(ticks, tick, lte).Index
-		nextInitializedTick := math.Max(float64(minimum), float64(index))
-		return int(nextInitializedTick), int(nextInitializedTick) == index
+
+		if isBelowSmallest {
+			return minimum, ZeroValueTickInitialized, ErrBelowSmallest
+		}
+
+		nextInitializedTick, err := NextInitializedTick(ticks, tick, lte)
+		if err != nil {
+			return ZeroValueTickIndex, ZeroValueTickInitialized, err
+		}
+
+		index := nextInitializedTick.Index
+		nextInitializedTickIndex := math.Max(float64(minimum), float64(index))
+		return int(nextInitializedTickIndex), int(nextInitializedTickIndex) == index, nil
 	} else {
 		wordPos := int(compressed+1) >> 8
 		maximum := ((wordPos+1)<<8)*tickSpacing - 1
-		if IsAtOrAboveLargest(ticks, tick) {
-			return maximum, false
+		isAtOrAboveLargest, err := IsAtOrAboveLargest(ticks, tick)
+		if err != nil {
+			return ZeroValueTickIndex, ZeroValueTickInitialized, err
 		}
-		index := NextInitializedTick(ticks, tick, lte).Index
-		nextInitializedTick := math.Min(float64(maximum), float64(index))
-		return int(nextInitializedTick), int(nextInitializedTick) == index
+
+		if isAtOrAboveLargest {
+			return maximum, ZeroValueTickInitialized, ErrAtOrAboveLargest
+		}
+
+		nextInitializedTick, err := NextInitializedTick(ticks, tick, lte)
+		if err != nil {
+			return ZeroValueTickIndex, ZeroValueTickInitialized, err
+		}
+
+		index := nextInitializedTick.Index
+		nextInitializedTickIndex := math.Min(float64(maximum), float64(index))
+		return int(nextInitializedTickIndex), int(nextInitializedTickIndex) == index, nil
 	}
+}
+
+func NextInitializedTickIndex(ticks []Tick, tick int, lte bool) (int, bool, error) {
+	nextInitializedTick, err := NextInitializedTick(ticks, tick, lte)
+	if err != nil {
+		return ZeroValueTickIndex, ZeroValueTickInitialized, err
+	}
+
+	// The found tick is surely initialized
+	return nextInitializedTick.Index, true, nil
 }
 
 // utils
@@ -126,9 +213,14 @@ func isTicksSorted(ticks []Tick) bool {
  * @param tick tick to find the largest tick that is less than or equal to tick
  * @private
  */
-func binarySearch(ticks []Tick, tick int) int {
-	if IsBelowSmallest(ticks, tick) {
-		panic("tick is below smallest tick")
+func binarySearch(ticks []Tick, tick int) (int, error) {
+	isBelowSmallest, err := IsBelowSmallest(ticks, tick)
+	if err != nil {
+		return ZeroValueTickIndex, err
+	}
+
+	if isBelowSmallest {
+		return ZeroValueTickIndex, ErrBelowSmallest
 	}
 
 	// binary search
@@ -137,7 +229,7 @@ func binarySearch(ticks []Tick, tick int) int {
 	for start <= end {
 		mid := (start + end) / 2
 		if ticks[mid].Index == tick {
-			return mid
+			return mid, nil
 		} else if ticks[mid].Index < tick {
 			start = mid + 1
 		} else {
@@ -148,8 +240,8 @@ func binarySearch(ticks []Tick, tick int) int {
 	// if we get here, we didn't find a tick that is less than or equal to tick
 	// so we return the index of the tick that is closest to tick
 	if ticks[start].Index < tick {
-		return start
+		return start, nil
 	} else {
-		return start - 1
+		return start - 1, nil
 	}
 }

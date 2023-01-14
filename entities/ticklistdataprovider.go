@@ -12,10 +12,14 @@ func NewTickListDataProvider(ticks []Tick, tickSpacing int) (*TickListDataProvid
 	return &TickListDataProvider{ticks: ticks}, nil
 }
 
-func (p *TickListDataProvider) GetTick(tick int) Tick {
+func (p *TickListDataProvider) GetTick(tick int) (Tick, error) {
 	return GetTick(p.ticks, tick)
 }
 
-func (p *TickListDataProvider) NextInitializedTickWithinOneWord(tick int, lte bool, tickSpacing int) (int, bool) {
+func (p *TickListDataProvider) NextInitializedTickWithinOneWord(tick int, lte bool, tickSpacing int) (int, bool, error) {
 	return NextInitializedTickWithinOneWord(p.ticks, tick, lte, tickSpacing)
+}
+
+func (p *TickListDataProvider) NextInitializedTickIndex(tick int, lte bool) (int, bool, error) {
+	return NextInitializedTickIndex(p.ticks, tick, lte)
 }

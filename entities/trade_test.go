@@ -453,7 +453,7 @@ func TestBestTradeExactIn(t *testing.T) {
 	assert.Equal(t, len(result[0].Swaps[0].Route.Pools), 1)
 	assert.Equal(t, result[0].Swaps[0].Route.TokenPath, []*entities.Token{token0, token2})
 	assert.True(t, result[0].InputAmount().EqualTo(entities.FromRawAmount(token0, big.NewInt(10000)).Fraction))
-	assert.True(t, result[0].OutputAmount().EqualTo(entities.FromRawAmount(token2, big.NewInt(9971)).Fraction))
+	assert.True(t, result[0].OutputAmount().EqualTo(entities.FromRawAmount(token2, big.NewInt(9972)).Fraction))
 	assert.Equal(t, len(result[1].Swaps[0].Route.Pools), 2)
 	assert.Equal(t, result[1].Swaps[0].Route.TokenPath, []*entities.Token{token0, token1, token2})
 	assert.True(t, result[1].InputAmount().EqualTo(entities.FromRawAmount(token0, big.NewInt(10000)).Fraction))

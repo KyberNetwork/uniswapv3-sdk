@@ -218,14 +218,14 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 	}
 
 	if zeroForOne {
-		if sqrtPriceLimitX96.Cmp(utils.MinSqrtRatio) <= 0 {
+		if sqrtPriceLimitX96.Cmp(utils.MinSqrtRatio) < 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooLow
 		}
 		if sqrtPriceLimitX96.Cmp(p.SqrtRatioX96) >= 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooHigh
 		}
 	} else {
-		if sqrtPriceLimitX96.Cmp(utils.MaxSqrtRatio) >= 0 {
+		if sqrtPriceLimitX96.Cmp(utils.MaxSqrtRatio) > 0 {
 			return nil, nil, nil, 0, ErrSqrtPriceLimitX96TooHigh
 		}
 		if sqrtPriceLimitX96.Cmp(p.SqrtRatioX96) <= 0 {
@@ -259,7 +259,10 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		// because each iteration of the while loop rounds, we can't optimize this code (relative to the smart contract)
 		// by simply traversing to the next available tick, we instead need to exactly replicate
 		// tickBitmap.nextInitializedTickWithinOneWord
-		step.tickNext, step.initialized = p.TickDataProvider.NextInitializedTickWithinOneWord(state.tick, zeroForOne, p.tickSpacing())
+		step.tickNext, step.initialized, err = p.TickDataProvider.NextInitializedTickIndex(state.tick, zeroForOne)
+		if err != nil {
+			return nil, nil, nil, 0, err
+		}
 
 		if step.tickNext < utils.MinTick {
 			step.tickNext = utils.MinTick
@@ -303,7 +306,12 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		if state.sqrtPriceX96.Cmp(step.sqrtPriceNextX96) == 0 {
 			// if the tick is initialized, run the tick transition
 			if step.initialized {
-				liquidityNet := p.TickDataProvider.GetTick(step.tickNext).LiquidityNet
+				tick, err := p.TickDataProvider.GetTick(step.tickNext)
+				if err != nil {
+					return nil, nil, nil, 0, err
+				}
+
+				liquidityNet := tick.LiquidityNet
 				// if we're moving leftward, we interpret liquidityNet as the opposite sign
 				// safe because liquidityNet cannot be type(int128).min
 				if zeroForOne {
