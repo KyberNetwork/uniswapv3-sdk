@@ -26,7 +26,8 @@ func addIn256(x, y *big.Int) *big.Int {
 }
 
 func GetAmount0Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp bool) *big.Int {
-	if sqrtRatioAX96.Cmp(sqrtRatioBX96) >= 0 {
+	// https://github.com/Uniswap/v3-core/blob/d8b1c635c275d2a9450bd6a78f3fa2484fef73eb/contracts/libraries/SqrtPriceMath.sol#L159
+	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
 
@@ -40,7 +41,8 @@ func GetAmount0Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp b
 }
 
 func GetAmount1Delta(sqrtRatioAX96, sqrtRatioBX96, liquidity *big.Int, roundUp bool) *big.Int {
-	if sqrtRatioAX96.Cmp(sqrtRatioBX96) >= 0 {
+	// https://github.com/Uniswap/v3-core/blob/d8b1c635c275d2a9450bd6a78f3fa2484fef73eb/contracts/libraries/SqrtPriceMath.sol#L188
+	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
 

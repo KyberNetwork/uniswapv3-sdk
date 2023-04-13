@@ -4,6 +4,8 @@ import (
 	"errors"
 	"math"
 	"math/big"
+
+	"github.com/daoleno/uniswapv3-sdk/constants"
 )
 
 const (
@@ -192,8 +194,12 @@ func NextInitializedTickIndex(ticks []Tick, tick int, lte bool) (int, bool, erro
 		return ZeroValueTickIndex, ZeroValueTickInitialized, err
 	}
 
-	// The found tick is surely initialized
-	return nextInitializedTick.Index, true, nil
+	var isInitialized bool
+	if nextInitializedTick.LiquidityGross.Cmp(constants.Zero) != 0 {
+		isInitialized = true
+	}
+
+	return nextInitializedTick.Index, isInitialized, nil
 }
 
 // utils
