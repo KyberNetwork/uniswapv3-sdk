@@ -15,6 +15,9 @@ const (
 )
 
 func GetFirstPool(path []byte) []byte {
+	if len(path) == 0 || len(path) < PopOffset {
+		return nil
+	}
 	return path[0:PopOffset]
 }
 
@@ -23,6 +26,10 @@ func HasMultiplePools(path []byte) bool {
 }
 
 func SkipToken(path []byte) []byte {
+	if len(path) < NextOffset {
+		return nil
+	}
+
 	return path[NextOffset : len(path)-NextOffset]
 }
 
