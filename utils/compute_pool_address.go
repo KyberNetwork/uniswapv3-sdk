@@ -10,6 +10,10 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+var (
+	UniswapV3FactoryAddress = common.HexToAddress("0x1f98431c8ad98523631ae4a59f267346ea31f984")
+)
+
 /**
  * Computes a pool address
  * @param factoryAddress The Uniswap V3 factory address
@@ -18,7 +22,7 @@ import (
  * @param fee The fee tier of the pool
  * @returns The pool address
  */
-func ComputePoolAddress(factoryAddress common.Address, tokenA *entities.Token, tokenB *entities.Token, fee constants.FeeAmount, initCodeHashManualOverride string) (common.Address, error) {
+func ComputePoolAddress(tokenA *entities.Token, tokenB *entities.Token, fee constants.FeeAmount, initCodeHashManualOverride string) (common.Address, error) {
 	isSorted, err := tokenA.SortsBefore(tokenB)
 	if err != nil {
 		return common.Address{}, err
@@ -34,17 +38,17 @@ func ComputePoolAddress(factoryAddress common.Address, tokenA *entities.Token, t
 		token0 = tokenB
 		token1 = tokenA
 	}
-	return getCreate2Address(factoryAddress, token0.Address, token1.Address, fee, initCodeHashManualOverride), nil
+	return getCreate2Address(token0.Address, token1.Address, fee, initCodeHashManualOverride), nil
 }
 
-func getCreate2Address(factoyAddress, addressA, addressB common.Address, fee constants.FeeAmount, initCodeHashManualOverride string) common.Address {
+func getCreate2Address(addressA, addressB common.Address, fee constants.FeeAmount, initCodeHashManualOverride string) common.Address {
 	var salt [32]byte
 	copy(salt[:], crypto.Keccak256(abiEncode(addressA, addressB, fee)))
 
 	if initCodeHashManualOverride != "" {
-		crypto.CreateAddress2(factoyAddress, salt, common.FromHex(initCodeHashManualOverride))
+		crypto.CreateAddress2(UniswapV3FactoryAddress, salt, common.FromHex(initCodeHashManualOverride))
 	}
-	return crypto.CreateAddress2(factoyAddress, salt, common.FromHex(constants.PoolInitCodeHash))
+	return crypto.CreateAddress2(UniswapV3FactoryAddress, salt, common.FromHex(constants.PoolInitCodeHash))
 }
 
 func abiEncode(addressA, addressB common.Address, fee constants.FeeAmount) []byte {
