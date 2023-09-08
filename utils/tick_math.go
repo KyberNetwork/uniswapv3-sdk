@@ -25,8 +25,8 @@ var (
 )
 
 func mulShift(val *big.Int, mulBy *big.Int) *big.Int {
-
-	return new(big.Int).Rsh(new(big.Int).Mul(val, mulBy), 128)
+	return GetBigInt().Rsh(new(big.Int).Mul(val, mulBy), 128)
+	//return new(big.Int).Rsh(new(big.Int).Mul(val, mulBy), 128)
 }
 
 var (
@@ -66,10 +66,11 @@ func GetSqrtRatioAtTick(tick int) (*big.Int, error) {
 		absTick = -tick
 	}
 	var ratio *big.Int
+
 	if absTick&0x1 != 0 {
-		ratio = sqrtConst1
+		ratio = GetBigInt().Set(sqrtConst1)
 	} else {
-		ratio = sqrtConst2
+		ratio = GetBigInt().Set(sqrtConst2)
 	}
 	if (absTick & 0x2) != 0 {
 		ratio = mulShift(ratio, sqrtConst3)
@@ -132,6 +133,7 @@ func GetSqrtRatioAtTick(tick int) (*big.Int, error) {
 		ratio = new(big.Int).Div(entities.MaxUint256, ratio)
 	}
 
+	defer PutBigInt(ratio)
 	// back to Q96
 	if new(big.Int).Rem(ratio, Q32).Cmp(constants.Zero) > 0 {
 		return new(big.Int).Add((new(big.Int).Div(ratio, Q32)), constants.One), nil
