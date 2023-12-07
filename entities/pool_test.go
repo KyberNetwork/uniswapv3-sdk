@@ -142,21 +142,21 @@ func TestGetOutputAmount(t *testing.T) {
 
 	// USDC -> DAI
 	inputAmount := entities.FromRawAmount(USDC, big.NewInt(100))
-	outputAmount, _, err := pool.GetOutputAmount(inputAmount, nil)
+	outputAmount, err := pool.GetOutputAmount(inputAmount, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, outputAmount.Currency.Equal(DAI))
-	assert.Equal(t, outputAmount.Quotient(), big.NewInt(98))
+	assert.True(t, outputAmount.ReturnedAmount.Currency.Equal(DAI))
+	assert.Equal(t, outputAmount.ReturnedAmount.Quotient(), big.NewInt(98))
 
 	// DAI -> USDC
 	inputAmount = entities.FromRawAmount(DAI, big.NewInt(100))
-	outputAmount, _, err = pool.GetOutputAmount(inputAmount, nil)
+	outputAmount, err = pool.GetOutputAmount(inputAmount, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, outputAmount.Currency.Equal(USDC))
-	assert.Equal(t, outputAmount.Quotient(), big.NewInt(98))
+	assert.True(t, outputAmount.ReturnedAmount.Currency.Equal(USDC))
+	assert.Equal(t, outputAmount.ReturnedAmount.Quotient(), big.NewInt(98))
 }
 
 func TestGetInputAmount(t *testing.T) {
