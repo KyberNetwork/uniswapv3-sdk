@@ -43,12 +43,11 @@ type Pool struct {
 }
 
 type SwapResult struct {
-	amountCalculated  *big.Int
-	sqrtRatioX96      *big.Int
-	liquidity         *big.Int
-	currentTick       int
-	crossTickLoops    int
-	nonCrossTickLoops int
+	amountCalculated *big.Int
+	sqrtRatioX96     *big.Int
+	liquidity        *big.Int
+	currentTick      int
+	crossTickLoops   int
 }
 
 type GetAmountResult struct {
@@ -192,10 +191,9 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 		return nil, err
 	}
 	return &GetAmountResult{
-		ReturnedAmount:    entities.FromRawAmount(outputToken, new(big.Int).Mul(swapResult.amountCalculated, constants.NegativeOne)),
-		NewPoolState:      pool,
-		CrossTickLoops:    swapResult.crossTickLoops,
-		NonCrossTickLoops: swapResult.nonCrossTickLoops,
+		ReturnedAmount: entities.FromRawAmount(outputToken, new(big.Int).Mul(swapResult.amountCalculated, constants.NegativeOne)),
+		NewPoolState:   pool,
+		CrossTickLoops: swapResult.crossTickLoops,
 	}, nil
 }
 
@@ -289,6 +287,9 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		liquidity:                p.Liquidity,
 	}
 
+	// crossTickLoops is the number of loops that cross the current tick
+	crossTickLoops := 0
+
 	// start swap while loop
 	for state.amountSpecifiedRemaining.Cmp(constants.Zero) != 0 && state.sqrtPriceX96.Cmp(sqrtPriceLimitX96) != 0 {
 		var step StepComputations
@@ -362,6 +363,8 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 			} else {
 				state.tick = step.tickNext
 			}
+
+			crossTickLoops++
 		} else if state.sqrtPriceX96.Cmp(step.sqrtPriceStartX96) != 0 {
 			// recompute unless we're on a lower tick boundary (i.e. already transitioned ticks), and haven't moved
 			state.tick, err = utils.GetTickAtSqrtRatio(state.sqrtPriceX96)
@@ -376,9 +379,7 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		liquidity:        state.liquidity,
 		currentTick:      state.tick,
 
-		// TODO: Increase crossTick & nonCrossTick values
-		crossTickLoops:    0,
-		nonCrossTickLoops: 0,
+		crossTickLoops: crossTickLoops,
 	}, nil
 }
 
