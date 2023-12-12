@@ -43,18 +43,17 @@ type Pool struct {
 }
 
 type SwapResult struct {
-	amountCalculated *big.Int
-	sqrtRatioX96     *big.Int
-	liquidity        *big.Int
-	currentTick      int
-	crossTickLoops   int
+	amountCalculated   *big.Int
+	sqrtRatioX96       *big.Int
+	liquidity          *big.Int
+	currentTick        int
+	crossInitTickLoops int
 }
 
 type GetAmountResult struct {
-	ReturnedAmount    *entities.CurrencyAmount
-	NewPoolState      *Pool
-	CrossTickLoops    int
-	NonCrossTickLoops int
+	ReturnedAmount     *entities.CurrencyAmount
+	NewPoolState       *Pool
+	CrossInitTickLoops int
 }
 
 func GetAddress(tokenA, tokenB *entities.Token, fee constants.FeeAmount, initCodeHashManualOverride string) (common.Address, error) {
@@ -191,9 +190,9 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 		return nil, err
 	}
 	return &GetAmountResult{
-		ReturnedAmount: entities.FromRawAmount(outputToken, new(big.Int).Mul(swapResult.amountCalculated, constants.NegativeOne)),
-		NewPoolState:   pool,
-		CrossTickLoops: swapResult.crossTickLoops,
+		ReturnedAmount:     entities.FromRawAmount(outputToken, new(big.Int).Mul(swapResult.amountCalculated, constants.NegativeOne)),
+		NewPoolState:       pool,
+		CrossInitTickLoops: swapResult.crossInitTickLoops,
 	}, nil
 }
 
@@ -287,8 +286,9 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		liquidity:                p.Liquidity,
 	}
 
-	// crossTickLoops is the number of loops that cross the current tick
-	crossTickLoops := 0
+	// crossInitTickLoops is the number of loops that cross an initialized tick.
+	// We only count when tick passes an initialized tick, since gas only significant in this case.
+	crossInitTickLoops := 0
 
 	// start swap while loop
 	for state.amountSpecifiedRemaining.Cmp(constants.Zero) != 0 && state.sqrtPriceX96.Cmp(sqrtPriceLimitX96) != 0 {
@@ -357,6 +357,8 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 					liquidityNet = new(big.Int).Mul(liquidityNet, constants.NegativeOne)
 				}
 				state.liquidity = utils.AddDelta(state.liquidity, liquidityNet)
+
+				crossInitTickLoops++
 			}
 			if zeroForOne {
 				state.tick = step.tickNext - 1
@@ -364,7 +366,6 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 				state.tick = step.tickNext
 			}
 
-			crossTickLoops++
 		} else if state.sqrtPriceX96.Cmp(step.sqrtPriceStartX96) != 0 {
 			// recompute unless we're on a lower tick boundary (i.e. already transitioned ticks), and haven't moved
 			state.tick, err = utils.GetTickAtSqrtRatio(state.sqrtPriceX96)
@@ -379,7 +380,7 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		liquidity:        state.liquidity,
 		currentTick:      state.tick,
 
-		crossTickLoops: crossTickLoops,
+		crossInitTickLoops: crossInitTickLoops,
 	}, nil
 }
 
