@@ -5,7 +5,7 @@ import (
 	"math"
 	"math/big"
 
-	"github.com/daoleno/uniswapv3-sdk/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 )
 
 const (

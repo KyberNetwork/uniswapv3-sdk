@@ -4,9 +4,9 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	"github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/constants"
-	"github.com/daoleno/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 

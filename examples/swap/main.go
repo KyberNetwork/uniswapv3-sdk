@@ -7,11 +7,11 @@ import (
 
 	"log"
 
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/examples/helper"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/periphery"
 	coreEntities "github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/constants"
-	"github.com/daoleno/uniswapv3-sdk/entities"
-	"github.com/daoleno/uniswapv3-sdk/examples/helper"
-	"github.com/daoleno/uniswapv3-sdk/periphery"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 )

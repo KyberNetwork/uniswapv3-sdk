@@ -1,12 +1,9 @@
-module github.com/KyberNetwork/uniswapv3-sdk
+module github.com/KyberNetwork/uniswapv3-sdk-uint256
 
 go 1.18
 
-replace github.com/daoleno/uniswapv3-sdk v0.4.0 => github.com/KyberNetwork/uniswapv3-sdk v0.4.0
-
 require (
 	github.com/daoleno/uniswap-sdk-core v0.1.5
-	github.com/daoleno/uniswapv3-sdk v0.4.0
 	github.com/ethereum/go-ethereum v1.10.20
 	github.com/shopspring/decimal v1.3.1
 	github.com/stretchr/testify v1.8.0

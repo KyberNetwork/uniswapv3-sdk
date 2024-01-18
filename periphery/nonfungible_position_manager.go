@@ -6,10 +6,10 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/constants"
-	"github.com/daoleno/uniswapv3-sdk/entities"
-	"github.com/daoleno/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
