@@ -3,40 +3,79 @@ package utils
 import (
 	"math/big"
 
+	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/holiman/uint256"
 )
 
 var MaxFee = new(big.Int).Exp(big.NewInt(10), big.NewInt(6), nil)
 
-func ComputeSwapStep(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, amountRemaining *big.Int, feePips constants.FeeAmount) (sqrtRatioNextX96, amountIn, amountOut, feeAmount *big.Int, err error) {
-	zeroForOne := sqrtRatioCurrentX96.Cmp(sqrtRatioTargetX96) >= 0
-	exactIn := amountRemaining.Cmp(constants.Zero) >= 0
+const MaxFeeInt = 1000000
 
+var MaxFeeUint256 = uint256.NewInt(MaxFeeInt)
+
+func ComputeSwapStep(
+	sqrtRatioCurrentX96,
+	sqrtRatioTargetX96 *Uint160,
+	liquidity *Uint128,
+	amountRemaining *int256.Int,
+	feePips constants.FeeAmount,
+) (sqrtRatioNextX96 *Uint160, amountIn, amountOut, feeAmount *uint256.Int, err error) {
+	zeroForOne := sqrtRatioCurrentX96.Cmp(sqrtRatioTargetX96) >= 0
+	exactIn := amountRemaining.Sign() >= 0
+
+	var amountRemainingU uint256.Int
 	if exactIn {
-		amountRemainingLessFee := new(big.Int).Div(new(big.Int).Mul(amountRemaining, new(big.Int).Sub(MaxFee, big.NewInt(int64(feePips)))), MaxFee)
+		amountRemainingBI := amountRemaining.ToBig()
+		amountRemainingU.SetFromBig(amountRemainingBI) // TODO: optimize this
+	} else {
+		amountRemaining1 := new(int256.Int).Set(amountRemaining)
+		amountRemainingBI := amountRemaining1.ToBig()
+		amountRemainingU.SetFromBig(amountRemainingBI) // TODO: optimize this
+		amountRemainingU.Neg(&amountRemainingU)
+	}
+
+	var maxFeeMinusFeePips uint256.Int
+	maxFeeMinusFeePips.SetUint64(MaxFeeInt - uint64(feePips))
+	if exactIn {
+		var amountRemainingLessFee, tmp uint256.Int
+		tmp.Mul(&amountRemainingU, &maxFeeMinusFeePips)
+		amountRemainingLessFee.Div(&tmp, MaxFeeUint256)
 		if zeroForOne {
-			amountIn = GetAmount0Delta(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, true)
+			amountIn, err = GetAmount0DeltaV2(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, true)
+			if err != nil {
+				return
+			}
 		} else {
-			amountIn = GetAmount1Delta(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, true)
+			amountIn, err = GetAmount1DeltaV2(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, true)
+			if err != nil {
+				return
+			}
 		}
 		if amountRemainingLessFee.Cmp(amountIn) >= 0 {
 			sqrtRatioNextX96 = sqrtRatioTargetX96
 		} else {
-			sqrtRatioNextX96, err = GetNextSqrtPriceFromInput(sqrtRatioCurrentX96, liquidity, amountRemainingLessFee, zeroForOne)
+			sqrtRatioNextX96, err = GetNextSqrtPriceFromInput(sqrtRatioCurrentX96, liquidity, &amountRemainingLessFee, zeroForOne)
 			if err != nil {
 				return
 			}
 		}
 	} else {
 		if zeroForOne {
-			amountOut = GetAmount1Delta(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, false)
+			amountOut, err = GetAmount1DeltaV2(sqrtRatioTargetX96, sqrtRatioCurrentX96, liquidity, false)
+			if err != nil {
+				return
+			}
 		} else {
-			amountOut = GetAmount0Delta(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, false)
+			amountOut, err = GetAmount0DeltaV2(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, false)
+			if err != nil {
+				return
+			}
 		}
-		if new(big.Int).Mul(amountRemaining, constants.NegativeOne).Cmp(amountOut) >= 0 {
+		if amountRemainingU.Cmp(amountOut) >= 0 {
 			sqrtRatioNextX96 = sqrtRatioTargetX96
 		} else {
-			sqrtRatioNextX96, err = GetNextSqrtPriceFromOutput(sqrtRatioCurrentX96, liquidity, new(big.Int).Mul(amountRemaining, constants.NegativeOne), zeroForOne)
+			sqrtRatioNextX96, err = GetNextSqrtPriceFromOutput(sqrtRatioCurrentX96, liquidity, &amountRemainingU, zeroForOne)
 			if err != nil {
 				return
 			}
@@ -47,29 +86,44 @@ func ComputeSwapStep(sqrtRatioCurrentX96, sqrtRatioTargetX96, liquidity, amountR
 
 	if zeroForOne {
 		if !(max && exactIn) {
-			amountIn = GetAmount0Delta(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, true)
+			amountIn, err = GetAmount0DeltaV2(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, true)
+			if err != nil {
+				return
+			}
 		}
 		if !(max && !exactIn) {
-			amountOut = GetAmount1Delta(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, false)
+			amountOut, err = GetAmount1DeltaV2(sqrtRatioNextX96, sqrtRatioCurrentX96, liquidity, false)
+			if err != nil {
+				return
+			}
 		}
 	} else {
 		if !(max && exactIn) {
-			amountIn = GetAmount1Delta(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, true)
+			amountIn, err = GetAmount1DeltaV2(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, true)
+			if err != nil {
+				return
+			}
 		}
 		if !(max && !exactIn) {
-			amountOut = GetAmount0Delta(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, false)
+			amountOut, err = GetAmount0DeltaV2(sqrtRatioCurrentX96, sqrtRatioNextX96, liquidity, false)
+			if err != nil {
+				return
+			}
 		}
 	}
 
-	if !exactIn && amountOut.Cmp(new(big.Int).Mul(amountRemaining, constants.NegativeOne)) > 0 {
-		amountOut = new(big.Int).Mul(amountRemaining, constants.NegativeOne)
+	if !exactIn && amountOut.Cmp(&amountRemainingU) > 0 {
+		amountOut = &amountRemainingU
 	}
 
 	if exactIn && sqrtRatioNextX96.Cmp(sqrtRatioTargetX96) != 0 {
 		// we didn't reach the target, so take the remainder of the maximum input as fee
-		feeAmount = new(big.Int).Sub(amountRemaining, amountIn)
+		feeAmount = new(uint256.Int).Sub(&amountRemainingU, amountIn)
 	} else {
-		feeAmount = MulDivRoundingUp(amountIn, big.NewInt(int64(feePips)), new(big.Int).Sub(MaxFee, big.NewInt(int64(feePips))))
+		feeAmount, err = MulDivRoundingUp(amountIn, uint256.NewInt(uint64(feePips)), &maxFeeMinusFeePips)
+		if err != nil {
+			return
+		}
 	}
 
 	return

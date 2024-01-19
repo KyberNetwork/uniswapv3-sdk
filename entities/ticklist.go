@@ -3,9 +3,8 @@ package entities
 import (
 	"errors"
 	"math"
-	"math/big"
 
-	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/KyberNetwork/int256"
 )
 
 const (
@@ -41,11 +40,11 @@ func ValidateList(ticks []Tick, tickSpacing int) error {
 	}
 
 	// ensure tick liquidity deltas sum to 0
-	sum := big.NewInt(0)
+	sum := int256.NewInt(0)
 	for _, tick := range ticks {
 		sum.Add(sum, tick.LiquidityNet)
 	}
-	if sum.Cmp(big.NewInt(0)) != 0 {
+	if !sum.IsZero() {
 		return ErrZeroNet
 	}
 
@@ -195,7 +194,7 @@ func NextInitializedTickIndex(ticks []Tick, tick int, lte bool) (int, bool, erro
 	}
 
 	var isInitialized bool
-	if nextInitializedTick.LiquidityGross.Cmp(constants.Zero) != 0 {
+	if !nextInitializedTick.LiquidityGross.IsZero() {
 		isInitialized = true
 	}
 

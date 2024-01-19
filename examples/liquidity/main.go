@@ -18,7 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-//mint a new liquidity
+// mint a new liquidity
 func mintOrAdd(client *ethclient.Client, wallet *helper.Wallet, tokenID *big.Int) {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 

@@ -82,7 +82,7 @@ func (p *Position) Amount0() (*entities.CurrencyAmount, error) {
 			if err != nil {
 				return nil, err
 			}
-			p.token0Amount = entities.FromRawAmount(p.Pool.Token0, utils.GetAmount0Delta(p.Pool.SqrtRatioX96, sqrtTickUpper, p.Liquidity, true))
+			p.token0Amount = entities.FromRawAmount(p.Pool.Token0, utils.GetAmount0Delta(p.Pool.SqrtRatioX96.ToBig(), sqrtTickUpper, p.Liquidity, true))
 		} else {
 			p.token0Amount = entities.FromRawAmount(p.Pool.Token0, constants.Zero)
 		}
@@ -100,7 +100,7 @@ func (p *Position) Amount1() (*entities.CurrencyAmount, error) {
 			if err != nil {
 				return nil, err
 			}
-			p.token1Amount = entities.FromRawAmount(p.Pool.Token1, utils.GetAmount1Delta(sqrtTickLower, p.Pool.SqrtRatioX96, p.Liquidity, false))
+			p.token1Amount = entities.FromRawAmount(p.Pool.Token1, utils.GetAmount1Delta(sqrtTickLower, p.Pool.SqrtRatioX96.ToBig(), p.Liquidity, false))
 		} else {
 			sqrtTickLower, err := utils.GetSqrtRatioAtTick(p.TickLower)
 			if err != nil {
@@ -266,8 +266,8 @@ func (p *Position) MintAmounts() (amount0, amount1 *big.Int, err error) {
 			amount1 = constants.Zero
 			return amount0, amount1, nil
 		} else if p.Pool.TickCurrent < p.TickUpper {
-			amount0 = utils.GetAmount0Delta(p.Pool.SqrtRatioX96, rUpper, p.Liquidity, true)
-			amount1 = utils.GetAmount1Delta(rLower, p.Pool.SqrtRatioX96, p.Liquidity, true)
+			amount0 = utils.GetAmount0Delta(p.Pool.SqrtRatioX96.ToBig(), rUpper, p.Liquidity, true)
+			amount1 = utils.GetAmount1Delta(rLower, p.Pool.SqrtRatioX96.ToBig(), p.Liquidity, true)
 		} else {
 			amount0 = constants.Zero
 			amount1 = utils.GetAmount1Delta(rLower, rUpper, p.Liquidity, true)
@@ -298,7 +298,7 @@ func FromAmounts(pool *Pool, tickLower, tickUpper int, amount0, amount1 *big.Int
 	if err != nil {
 		return nil, err
 	}
-	return NewPosition(pool, utils.MaxLiquidityForAmounts(pool.SqrtRatioX96, sqrtRatioAX96, sqrtRatioBX96, amount0, amount1, useFullPrecision), tickLower, tickUpper)
+	return NewPosition(pool, utils.MaxLiquidityForAmounts(pool.SqrtRatioX96.ToBig(), sqrtRatioAX96, sqrtRatioBX96, amount0, amount1, useFullPrecision), tickLower, tickUpper)
 }
 
 /**

@@ -4,10 +4,12 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -79,16 +81,18 @@ var (
 func v2StylePool(token0, token1 *entities.Token, reserve0, reserve1 *entities.CurrencyAmount, feeAmount constants.FeeAmount) *Pool {
 	sqrtRatioX96 := utils.EncodeSqrtRatioX96(reserve1.Quotient(), reserve0.Quotient())
 	liquidity := new(big.Int).Sqrt(new(big.Int).Mul(reserve0.Quotient(), reserve1.Quotient()))
+	liquidityGross := uint256.MustFromBig(liquidity)
+	liquidityNet := int256.MustFromBig(liquidity)
 	ticks := []Tick{
 		{
 			Index:          NearestUsableTick(utils.MinTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   liquidity,
-			LiquidityGross: liquidity,
+			LiquidityNet:   liquidityNet,
+			LiquidityGross: liquidityGross,
 		},
 		{
 			Index:          NearestUsableTick(utils.MaxTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   new(big.Int).Mul(liquidity, big.NewInt(-1)),
-			LiquidityGross: liquidity,
+			LiquidityNet:   new(int256.Int).Neg(liquidityNet),
+			LiquidityGross: liquidityGross,
 		},
 	}
 	s, err := utils.GetTickAtSqrtRatio(sqrtRatioX96)

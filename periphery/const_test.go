@@ -3,11 +3,13 @@ package periphery
 import (
 	"math/big"
 
+	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 )
 
 var (
@@ -32,6 +34,10 @@ var (
 	route_weth_0, _   = entities.NewRoute([]*entities.Pool{pool_0_weth}, weth, token0)
 	route_weth_0_1, _ = entities.NewRoute([]*entities.Pool{pool_0_weth, pool_0_1_medium}, weth, token1)
 
+	liquidityGross  = uint256.NewInt(1_000_000)
+	liquidityNet    = int256.NewInt(1_000_000)
+	liquidityNetNeg = int256.NewInt(-1_000_000)
+
 	feeAmount    = constants.FeeMedium
 	sqrtRatioX96 = utils.EncodeSqrtRatioX96(big.NewInt(1), big.NewInt(1))
 	liquidity    = big.NewInt(1_000_000)
@@ -39,13 +45,13 @@ var (
 	ticks        = []entities.Tick{
 		{
 			Index:          entities.NearestUsableTick(utils.MinTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   liquidity,
-			LiquidityGross: liquidity,
+			LiquidityNet:   liquidityNet,
+			LiquidityGross: liquidityGross,
 		},
 		{
 			Index:          entities.NearestUsableTick(utils.MaxTick, constants.TickSpacings[feeAmount]),
-			LiquidityNet:   new(big.Int).Mul(liquidity, constants.NegativeOne),
-			LiquidityGross: liquidity,
+			LiquidityNet:   liquidityNetNeg,
+			LiquidityGross: liquidityGross,
 		},
 	}
 

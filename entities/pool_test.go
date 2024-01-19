@@ -4,10 +4,12 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +17,9 @@ var (
 	USDC     = entities.NewToken(1, common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), 6, "USDC", "USD Coin")
 	DAI      = entities.NewToken(1, common.HexToAddress("0x6B175474E89094C44Da98b954EedeAC495271d0F"), 18, "DAI", "Dai Stablecoin")
 	OneEther = big.NewInt(1e18)
+
+	OneEtherI256  = int256.NewInt(1e18)
+	OneEtherUI256 = uint256.NewInt(1e18)
 )
 
 func TestNewPool(t *testing.T) {
@@ -116,13 +121,13 @@ func newTestPool() *Pool {
 	ticks := []Tick{
 		{
 			Index:          NearestUsableTick(utils.MinTick, constants.TickSpacings[constants.FeeLow]),
-			LiquidityNet:   OneEther,
-			LiquidityGross: OneEther,
+			LiquidityNet:   OneEtherI256,
+			LiquidityGross: OneEtherUI256,
 		},
 		{
 			Index:          NearestUsableTick(utils.MaxTick, constants.TickSpacings[constants.FeeLow]),
-			LiquidityNet:   new(big.Int).Mul(OneEther, constants.NegativeOne),
-			LiquidityGross: OneEther,
+			LiquidityNet:   new(int256.Int).Neg(OneEtherI256),
+			LiquidityGross: OneEtherUI256,
 		},
 	}
 

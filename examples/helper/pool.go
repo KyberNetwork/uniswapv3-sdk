@@ -4,7 +4,9 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/examples/contract"
+	"github.com/holiman/uint256"
 
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
@@ -61,14 +63,14 @@ func ConstructV3Pool(client *ethclient.Client, token0, token1 *coreEntities.Toke
 		{
 			Index: entities.NearestUsableTick(sdkutils.MinTick,
 				constants.TickSpacings[feeAmount]),
-			LiquidityNet:   pooltick.LiquidityNet,
-			LiquidityGross: pooltick.LiquidityGross,
+			LiquidityNet:   int256.MustFromBig(pooltick.LiquidityNet),
+			LiquidityGross: uint256.MustFromBig(pooltick.LiquidityGross),
 		},
 		{
 			Index: entities.NearestUsableTick(sdkutils.MaxTick,
 				constants.TickSpacings[feeAmount]),
-			LiquidityNet:   pooltick.LiquidityNet,
-			LiquidityGross: pooltick.LiquidityGross,
+			LiquidityNet:   int256.MustFromBig(pooltick.LiquidityNet),
+			LiquidityGross: uint256.MustFromBig(pooltick.LiquidityGross),
 		},
 	}
 

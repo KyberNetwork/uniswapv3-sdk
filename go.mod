@@ -1,12 +1,14 @@
 module github.com/KyberNetwork/uniswapv3-sdk-uint256
 
-go 1.18
+go 1.21
 
 require (
+	github.com/KyberNetwork/int256 v0.1.4
 	github.com/daoleno/uniswap-sdk-core v0.1.5
 	github.com/ethereum/go-ethereum v1.10.20
+	github.com/holiman/uint256 v1.2.3
 	github.com/shopspring/decimal v1.3.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.4
 )
 
 require (

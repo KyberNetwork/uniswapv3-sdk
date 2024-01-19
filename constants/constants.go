@@ -5,6 +5,7 @@ import (
 
 	"github.com/daoleno/uniswap-sdk-core/entities"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/holiman/uint256"
 )
 
 const PoolInitCodeHash = "0xe34f199b19b2b4f47f68442619d555527d244f78a3297ea89325f843f87b8b54"
@@ -50,6 +51,8 @@ var (
 	// used in liquidity amount math
 	Q96  = new(big.Int).Exp(big.NewInt(2), big.NewInt(96), nil)
 	Q192 = new(big.Int).Exp(Q96, big.NewInt(2), nil)
+
+	Q96U256 = new(uint256.Int).Exp(uint256.NewInt(2), uint256.NewInt(96))
 
 	PercentZero = entities.NewFraction(big.NewInt(0), big.NewInt(1))
 )

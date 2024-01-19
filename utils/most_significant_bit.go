@@ -2,27 +2,40 @@ package utils
 
 import (
 	"errors"
-	"math/big"
 
-	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
-	"github.com/daoleno/uniswap-sdk-core/entities"
+	"github.com/holiman/uint256"
 )
 
 var ErrInvalidInput = errors.New("invalid input")
 
-func MostSignificantBit(x *big.Int) (int64, error) {
-	if x.Cmp(constants.Zero) <= 0 {
+type powerOf2 struct {
+	power uint
+	value *uint256.Int
+}
+
+var powersOf2 = []powerOf2{
+	{128, uint256.MustFromHex("0x100000000000000000000000000000000")},
+	{64, uint256.MustFromHex("0x10000000000000000")},
+	{32, uint256.MustFromHex("0x100000000")},
+	{16, uint256.MustFromHex("0x10000")},
+	{8, uint256.MustFromHex("0x100")},
+	{4, uint256.MustFromHex("0x10")},
+	{2, uint256.MustFromHex("0x4")},
+	{1, uint256.MustFromHex("0x2")},
+}
+
+func MostSignificantBit(x *uint256.Int) (uint, error) {
+	if x.Sign() == 0 {
 		return 0, ErrInvalidInput
 	}
-	if x.Cmp(entities.MaxUint256) > 0 {
-		return 0, ErrInvalidInput
-	}
-	var msb int64
-	for _, power := range []int64{128, 64, 32, 16, 8, 4, 2, 1} {
-		min := new(big.Int).Exp(big.NewInt(2), big.NewInt(int64(power)), nil)
-		if x.Cmp(min) >= 0 {
-			x = new(big.Int).Rsh(x, uint(power))
-			msb += power
+
+	var tmpX uint256.Int
+	tmpX.Set(x)
+	var msb uint
+	for _, p := range powersOf2 {
+		if tmpX.Cmp(p.value) >= 0 {
+			tmpX.Rsh(&tmpX, p.power)
+			msb += p.power
 		}
 	}
 	return msb, nil
