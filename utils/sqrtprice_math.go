@@ -52,18 +52,20 @@ func GetAmount0DeltaV2(sqrtRatioAX96, sqrtRatioBX96 *Uint160, liquidity *Uint128
 	numerator2.Sub(sqrtRatioBX96, sqrtRatioAX96)
 
 	if roundUp {
-		deno, err := MulDivRoundingUp(&numerator1, &numerator2, sqrtRatioBX96)
+		var deno Uint256
+		err := MulDivRoundingUpV2(&numerator1, &numerator2, sqrtRatioBX96, &deno)
 		if err != nil {
 			return nil, err
 		}
-		return DivRoundingUp(deno, sqrtRatioAX96), nil
+		return DivRoundingUp(&deno, sqrtRatioAX96), nil
 	}
 	// : FullMath.mulDiv(numerator1, numerator2, sqrtRatioBX96) / sqrtRatioAX96;
-	tmp, err := MulDiv(&numerator1, &numerator2, sqrtRatioBX96)
+	var tmp Uint256
+	err := MulDivV2(&numerator1, &numerator2, sqrtRatioBX96, &tmp, nil)
 	if err != nil {
 		return nil, err
 	}
-	result := new(uint256.Int).Div(tmp, sqrtRatioAX96)
+	result := new(uint256.Int).Div(&tmp, sqrtRatioAX96)
 	return result, nil
 }
 
@@ -87,13 +89,21 @@ func GetAmount1DeltaV2(sqrtRatioAX96, sqrtRatioBX96 *Uint160, liquidity *Uint128
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
 
-	var diff uint256.Int
+	var diff, result uint256.Int
 	diff.Sub(sqrtRatioBX96, sqrtRatioAX96)
 	if roundUp {
-		return MulDivRoundingUp(liquidity, &diff, constants.Q96U256)
+		err := MulDivRoundingUpV2(liquidity, &diff, constants.Q96U256, &result)
+		if err != nil {
+			return nil, err
+		}
+		return &result, nil
 	}
 	// : FullMath.mulDiv(liquidity, sqrtRatioBX96 - sqrtRatioAX96, FixedPoint96.Q96);
-	return MulDiv(liquidity, &diff, constants.Q96U256)
+	err := MulDivV2(liquidity, &diff, constants.Q96U256, &result, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }
 
 func GetNextSqrtPriceFromInput(sqrtPX96 *Uint160, liquidity *Uint128, amountIn *uint256.Int, zeroForOne bool) (*Uint160, error) {
@@ -127,14 +137,15 @@ func getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96 *Uint160, liquidity *Uint128
 		return sqrtPX96, nil
 	}
 
-	var numerator1, denominator, product, tmp uint256.Int
+	var numerator1, denominator, product, tmp, result uint256.Int
 	numerator1.Lsh(liquidity, 96)
 	multiplyIn256(amount, sqrtPX96, &product)
 	if add {
 		if tmp.Div(&product, amount).Cmp(sqrtPX96) == 0 {
 			addIn256(&numerator1, &product, &denominator)
 			if denominator.Cmp(&numerator1) >= 0 {
-				return MulDivRoundingUp(&numerator1, sqrtPX96, &denominator)
+				err := MulDivRoundingUpV2(&numerator1, sqrtPX96, &denominator, &result)
+				return &result, err
 			}
 		}
 		tmp.Div(&numerator1, sqrtPX96)
@@ -148,7 +159,8 @@ func getNextSqrtPriceFromAmount0RoundingUp(sqrtPX96 *Uint160, liquidity *Uint128
 			return nil, ErrInvariant
 		}
 		denominator.Sub(&numerator1, &product)
-		return MulDivRoundingUp(&numerator1, sqrtPX96, &denominator)
+		err := MulDivRoundingUpV2(&numerator1, sqrtPX96, &denominator, &result)
+		return &result, err
 	}
 }
 
@@ -173,14 +185,15 @@ func getNextSqrtPriceFromAmount1RoundingDown(sqrtPX96 *Uint160, liquidity *Uint1
 		return &quotient, nil
 	}
 
-	quotient, err := MulDivRoundingUp(amount, constants.Q96U256, liquidity)
+	var quotient Uint256
+	err := MulDivRoundingUpV2(amount, constants.Q96U256, liquidity, &quotient)
 	if err != nil {
 		return nil, err
 	}
-	if sqrtPX96.Cmp(quotient) <= 0 {
+	if sqrtPX96.Cmp(&quotient) <= 0 {
 		return nil, ErrInvariant
 	}
-	quotient.Sub(sqrtPX96, quotient)
+	quotient.Sub(sqrtPX96, &quotient)
 	// always fits 160 bits
-	return quotient, nil
+	return &quotient, nil
 }

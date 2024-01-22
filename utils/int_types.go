@@ -38,6 +38,13 @@ func ToInt256(value *Uint256, result *Int256) error {
 	return nil
 }
 
+func ToUInt256(value *Int256, result *Uint256) error {
+	var ba [32]byte
+	value.WriteToArray32(&ba)
+	result.SetBytes32(ba[:])
+	return nil
+}
+
 // https://github.com/Uniswap/v3-core/blob/main/contracts/libraries/SafeCast.sol
 func CheckToUint160(value *Uint256) error {
 	// we're using same type for Uint256 and Uint160, so use the original for now

@@ -60,6 +60,14 @@ type GetAmountResult struct {
 	CrossInitTickLoops int
 }
 
+type GetAmountResultV2 struct {
+	ReturnedAmount     *utils.Int256
+	SqrtRatioX96       *utils.Uint160
+	Liquidity          *utils.Uint128
+	CurrentTick        int
+	CrossInitTickLoops int
+}
+
 func GetAddress(tokenA, tokenB *entities.Token, fee constants.FeeAmount, initCodeHashManualOverride string) (common.Address, error) {
 	return utils.ComputePoolAddress(constants.FactoryAddress, tokenA, tokenB, fee, initCodeHashManualOverride)
 }
@@ -212,6 +220,20 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 		ReturnedAmount:     entities.FromRawAmount(outputToken, new(utils.Int256).Neg(swapResult.amountCalculated).ToBig()),
 		RemainingAmountIn:  entities.FromRawAmount(inputAmount.Currency, swapResult.remainingAmountIn.ToBig()),
 		NewPoolState:       pool,
+		CrossInitTickLoops: swapResult.crossInitTickLoops,
+	}, nil
+}
+
+func (p *Pool) GetOutputAmountV2(inputAmount *utils.Int256, zeroForOne bool, sqrtPriceLimitX96 *utils.Uint160) (*GetAmountResultV2, error) {
+	swapResult, err := p.swap(zeroForOne, inputAmount, sqrtPriceLimitX96)
+	if err != nil {
+		return nil, err
+	}
+	return &GetAmountResultV2{
+		ReturnedAmount:     new(utils.Int256).Neg(swapResult.amountCalculated),
+		SqrtRatioX96:       swapResult.sqrtRatioX96,
+		Liquidity:          swapResult.liquidity,
+		CurrentTick:        swapResult.currentTick,
 		CrossInitTickLoops: swapResult.crossInitTickLoops,
 	}, nil
 }

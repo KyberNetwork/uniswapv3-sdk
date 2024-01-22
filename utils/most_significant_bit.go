@@ -25,7 +25,7 @@ var powersOf2 = []powerOf2{
 }
 
 func MostSignificantBit(x *uint256.Int) (uint, error) {
-	if x.Sign() == 0 {
+	if x.IsZero() {
 		return 0, ErrInvalidInput
 	}
 

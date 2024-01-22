@@ -1,14 +1,10 @@
 package utils
 
 import (
-	"math/big"
-
 	"github.com/KyberNetwork/int256"
 	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
 	"github.com/holiman/uint256"
 )
-
-var MaxFee = new(big.Int).Exp(big.NewInt(10), big.NewInt(6), nil)
 
 const MaxFeeInt = 1000000
 
@@ -26,12 +22,9 @@ func ComputeSwapStep(
 
 	var amountRemainingU uint256.Int
 	if exactIn {
-		amountRemainingBI := amountRemaining.ToBig()
-		amountRemainingU.SetFromBig(amountRemainingBI) // TODO: optimize this
+		ToUInt256(amountRemaining, &amountRemainingU)
 	} else {
-		amountRemaining1 := new(int256.Int).Set(amountRemaining)
-		amountRemainingBI := amountRemaining1.ToBig()
-		amountRemainingU.SetFromBig(amountRemainingBI) // TODO: optimize this
+		ToUInt256(amountRemaining, &amountRemainingU)
 		amountRemainingU.Neg(&amountRemainingU)
 	}
 
@@ -120,7 +113,10 @@ func ComputeSwapStep(
 		// we didn't reach the target, so take the remainder of the maximum input as fee
 		feeAmount = new(uint256.Int).Sub(&amountRemainingU, amountIn)
 	} else {
-		feeAmount, err = MulDivRoundingUp(amountIn, uint256.NewInt(uint64(feePips)), &maxFeeMinusFeePips)
+		if feeAmount == nil {
+			feeAmount = new(Uint256)
+		}
+		err = MulDivRoundingUpV2(amountIn, uint256.NewInt(uint64(feePips)), &maxFeeMinusFeePips, feeAmount)
 		if err != nil {
 			return
 		}
