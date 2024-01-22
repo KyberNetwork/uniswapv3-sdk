@@ -167,11 +167,10 @@ func MulDiv(a, b, denominator *uint256.Int) (*uint256.Int, error) {
 }
 
 // Returns ceil(x / y)
-func DivRoundingUp(a, denominator *uint256.Int) *uint256.Int {
-	var result, rem uint256.Int
+func DivRoundingUp(a, denominator, result *uint256.Int) {
+	var rem uint256.Int
 	result.DivMod(a, denominator, &rem)
 	if !rem.IsZero() {
-		result.AddUint64(&result, 1)
+		result.AddUint64(result, 1)
 	}
-	return &result
 }

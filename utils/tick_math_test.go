@@ -19,8 +19,9 @@ func TestGetSqrtRatioAtTick(t *testing.T) {
 	rmax, _ := GetSqrtRatioAtTick(MinTick)
 	assert.Equal(t, rmax, MinSqrtRatio, "returns the correct value for min tick")
 
-	r, _ := GetSqrtRatioAtTickV2(MinTick + 1)
-	assert.Equal(t, uint256.NewInt(4295343490), r, "returns the correct value for min tick + 1")
+	var r Uint160
+	_ = GetSqrtRatioAtTickV2(MinTick+1, &r)
+	assert.Equal(t, uint256.NewInt(4295343490), &r, "returns the correct value for min tick + 1")
 
 	r0, _ := GetSqrtRatioAtTick(0)
 	assert.Equal(t, r0, new(big.Int).Lsh(constants.One, 96), "returns the correct value for tick 0")
@@ -28,11 +29,11 @@ func TestGetSqrtRatioAtTick(t *testing.T) {
 	rmin, _ := GetSqrtRatioAtTick(MaxTick)
 	assert.Equal(t, rmin, MaxSqrtRatio, "returns the correct value for max tick")
 
-	r, _ = GetSqrtRatioAtTickV2(MaxTick - 1)
-	assert.Equal(t, uint256.MustFromDecimal("1461373636630004318706518188784493106690254656249"), r, "returns the correct value for max tick - 1")
+	_ = GetSqrtRatioAtTickV2(MaxTick-1, &r)
+	assert.Equal(t, uint256.MustFromDecimal("1461373636630004318706518188784493106690254656249"), &r, "returns the correct value for max tick - 1")
 
-	r, _ = GetSqrtRatioAtTickV2(MaxTick)
-	assert.Equal(t, uint256.MustFromDecimal("1461446703485210103287273052203988822378723970342"), r, "returns the correct value for max tick")
+	_ = GetSqrtRatioAtTickV2(MaxTick, &r)
+	assert.Equal(t, uint256.MustFromDecimal("1461446703485210103287273052203988822378723970342"), &r, "returns the correct value for max tick")
 }
 
 func TestGetTickAtSqrtRatio(t *testing.T) {
