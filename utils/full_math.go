@@ -48,6 +48,7 @@ func MulDivRoundingUpV2(a, b, denominator, result *uint256.Int) error {
 
 // result=floor(a×b÷denominator), remainder=a×b%denominator
 // (pass remainder=nil if not required)
+// (the main usage for `remainder` is to be used in `MulDivRoundingUpV2` to determine if we need to round up, so it won't have to call MulMod again)
 func MulDivV2(a, b, denominator, result, remainder *uint256.Int) error {
 	// https://github.com/Uniswap/v3-core/blob/main/contracts/libraries/FullMath.sol
 	// 512-bit multiply [prod1 prod0] = a * b
@@ -76,6 +77,7 @@ func MulDivV2(a, b, denominator, result, remainder *uint256.Int) error {
 		}
 
 		if remainder != nil {
+			// if the caller request then calculate remainder
 			remainder.MulMod(a, b, &denominatorTmp)
 		}
 		result.Div(&prod0, &denominatorTmp)
@@ -95,6 +97,7 @@ func MulDivV2(a, b, denominator, result, remainder *uint256.Int) error {
 	// Make division exact by subtracting the remainder from [prod1 prod0]
 	// Compute remainder using mulmod
 	if remainder == nil {
+		// the caller doesn't request but we need it so use a temporary variable here
 		var remainderTmp Uint256
 		remainder = &remainderTmp
 	}
