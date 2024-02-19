@@ -46,12 +46,14 @@ type SwapResult struct {
 	amountCalculated   *big.Int
 	sqrtRatioX96       *big.Int
 	liquidity          *big.Int
+	remainingAmountIn  *big.Int
 	currentTick        int
 	crossInitTickLoops int
 }
 
 type GetAmountResult struct {
 	ReturnedAmount     *entities.CurrencyAmount
+	RemainingAmountIn  *entities.CurrencyAmount
 	NewPoolState       *Pool
 	CrossInitTickLoops int
 }
@@ -191,6 +193,7 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 	}
 	return &GetAmountResult{
 		ReturnedAmount:     entities.FromRawAmount(outputToken, new(big.Int).Mul(swapResult.amountCalculated, constants.NegativeOne)),
+		RemainingAmountIn:  entities.FromRawAmount(inputAmount.Currency, swapResult.remainingAmountIn),
 		NewPoolState:       pool,
 		CrossInitTickLoops: swapResult.crossInitTickLoops,
 	}, nil
@@ -375,11 +378,11 @@ func (p *Pool) swap(zeroForOne bool, amountSpecified, sqrtPriceLimitX96 *big.Int
 		}
 	}
 	return &SwapResult{
-		amountCalculated: state.amountCalculated,
-		sqrtRatioX96:     state.sqrtPriceX96,
-		liquidity:        state.liquidity,
-		currentTick:      state.tick,
-
+		amountCalculated:   state.amountCalculated,
+		sqrtRatioX96:       state.sqrtPriceX96,
+		liquidity:          state.liquidity,
+		currentTick:        state.tick,
+		remainingAmountIn:  state.amountSpecifiedRemaining,
 		crossInitTickLoops: crossInitTickLoops,
 	}, nil
 }
