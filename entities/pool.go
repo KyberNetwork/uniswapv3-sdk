@@ -62,6 +62,7 @@ type GetAmountResult struct {
 
 type GetAmountResultV2 struct {
 	ReturnedAmount     *utils.Int256
+	RemainingAmountIn  *utils.Int256
 	SqrtRatioX96       *utils.Uint160
 	Liquidity          *utils.Uint128
 	CurrentTick        int
@@ -232,6 +233,7 @@ func (p *Pool) GetOutputAmountV2(inputAmount *utils.Int256, zeroForOne bool, sqr
 	}
 	return &GetAmountResultV2{
 		ReturnedAmount:     new(utils.Int256).Neg(swapResult.amountCalculated),
+		RemainingAmountIn:  new(utils.Int256).Set(swapResult.remainingAmountIn),
 		SqrtRatioX96:       swapResult.sqrtRatioX96,
 		Liquidity:          swapResult.liquidity,
 		CurrentTick:        swapResult.currentTick,
