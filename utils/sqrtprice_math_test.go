@@ -30,11 +30,12 @@ func TestGetNextSqrtPriceFromInput(t *testing.T) {
 		{"0x" + p1.Text(16), "0x8ac7230489e80000", "0x10000000000000000000000000", true, "624999999995069620"},
 		{"0x" + p1.Text(16), "0x1", "0x8000000000000000000000000000000000000000000000000000000000000000", true, "1"},
 	}
+	var r Uint160
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			r, err := GetNextSqrtPriceFromInput(
+			err := GetNextSqrtPriceFromInput(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.Nil(t, err)
 			assert.Equal(t, tt.expResult, r.Dec())
 		})
@@ -51,9 +52,9 @@ func TestGetNextSqrtPriceFromInput(t *testing.T) {
 	}
 	for i, tt := range failTests {
 		t.Run(fmt.Sprintf("fail test %d", i), func(t *testing.T) {
-			_, err := GetNextSqrtPriceFromInput(
+			err := GetNextSqrtPriceFromInput(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.NotNil(t, err)
 		})
 	}
@@ -76,11 +77,12 @@ func TestGetNextSqrtPriceFromOutput(t *testing.T) {
 		{"0x" + p1.Text(16), "0xde0b6b3a7640000", "0x16345785d8a0000", false, "88031291682515930659493278152"},
 		{"0x" + p1.Text(16), "0xde0b6b3a7640000", "0x16345785d8a0000", true, "71305346262837903834189555302"},
 	}
+	var r Uint160
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			r, err := GetNextSqrtPriceFromOutput(
+			err := GetNextSqrtPriceFromOutput(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.Nil(t, err)
 			assert.Equal(t, tt.expResult, r.Dec())
 		})
@@ -104,9 +106,9 @@ func TestGetNextSqrtPriceFromOutput(t *testing.T) {
 	}
 	for i, tt := range failTests {
 		t.Run(fmt.Sprintf("fail test %d", i), func(t *testing.T) {
-			_, err := GetNextSqrtPriceFromOutput(
+			err := GetNextSqrtPriceFromOutput(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.NotNil(t, err)
 		})
 	}
@@ -135,11 +137,12 @@ func TestGetAmount0Delta(t *testing.T) {
 		{"0x" + p4.Text(16), "0x" + p5.Text(16), "0xde0b6b3a7640000", true, "24869"},
 		{"0x" + p4.Text(16), "0x" + p5.Text(16), "0xde0b6b3a7640000", false, "24868"},
 	}
+	var r Uint256
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			r, err := GetAmount0DeltaV2(
+			err := GetAmount0DeltaV2(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.Nil(t, err)
 			assert.Equal(t, tt.expResult, r.Dec())
 		})
@@ -167,11 +170,12 @@ func TestGetAmount1Delta(t *testing.T) {
 		{"0x" + p4.Text(16), "0x" + p1.Text(16), "0xde0b6b3a7640000", true, "90909090909090910"},
 		{"0x" + p4.Text(16), "0x" + p1.Text(16), "0xde0b6b3a7640000", false, "90909090909090909"},
 	}
+	var r Uint256
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			r, err := GetAmount1DeltaV2(
+			err := GetAmount1DeltaV2(
 				uint256.MustFromHex(tt.price), uint256.MustFromHex(tt.liquidity),
-				uint256.MustFromHex(tt.amount), tt.zeroForOne)
+				uint256.MustFromHex(tt.amount), tt.zeroForOne, &r)
 			require.Nil(t, err)
 			assert.Equal(t, tt.expResult, r.Dec())
 		})
@@ -181,18 +185,20 @@ func TestGetAmount1Delta(t *testing.T) {
 func TestSwap(t *testing.T) {
 	// sqrtP * sqrtQ overflows
 
-	sqrtQ, err := GetNextSqrtPriceFromInput(
+	var sqrtQ Uint160
+	err := GetNextSqrtPriceFromInput(
 		uint256.MustFromDecimal("1025574284609383690408304870162715216695788925244"),
 		uint256.MustFromDecimal("50015962439936049619261659728067971248"),
-		uint256.MustFromDecimal("406"), true)
+		uint256.MustFromDecimal("406"), true, &sqrtQ)
 	require.Nil(t, err)
 
 	require.Equal(t, "1025574284609383582644711336373707553698163132913", sqrtQ.Dec())
 
-	amount0Delta, err := GetAmount0DeltaV2(
-		sqrtQ,
+	var amount0Delta Uint256
+	err = GetAmount0DeltaV2(
+		&sqrtQ,
 		uint256.MustFromDecimal("1025574284609383690408304870162715216695788925244"),
-		uint256.MustFromDecimal("50015962439936049619261659728067971248"), true)
+		uint256.MustFromDecimal("50015962439936049619261659728067971248"), true, &amount0Delta)
 	require.Nil(t, err)
 
 	assert.Equal(t, "406", amount0Delta.Dec())

@@ -57,14 +57,17 @@ func TestComputeSwapStep(t *testing.T) {
 		{"20282409603651670423947251286016", "18254168643286503381552526157414", "1024", "-263000", 3000,
 			"1", "26214", "1", "="},
 	}
+	var sqrtRatioNextX96 Uint160
+	var amountIn, amountOut, feeAmount Uint256
 	for i, tt := range tests {
 		t.Run(fmt.Sprintf("test %d", i), func(t *testing.T) {
-			sqrtRatioNextX96, amountIn, amountOut, feeAmount, err := ComputeSwapStep(
+			err := ComputeSwapStep(
 				uint256.MustFromDecimal(tt.price),
 				uint256.MustFromDecimal(tt.priceTarget),
 				uint256.MustFromDecimal(tt.liquidity),
 				int256.MustFromDec(tt.amount),
 				tt.fee,
+				&sqrtRatioNextX96, &amountIn, &amountOut, &feeAmount,
 			)
 			require.Nil(t, err)
 			if tt.expNextPrice == "=" {

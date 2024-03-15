@@ -61,7 +61,8 @@ var (
 
 // deprecated
 func GetSqrtRatioAtTick(tick int) (*big.Int, error) {
-	res, err := GetSqrtRatioAtTickV2(tick)
+	var res Uint160
+	err := GetSqrtRatioAtTickV2(tick, &res)
 	return res.ToBig(), err
 }
 
@@ -69,15 +70,15 @@ func GetSqrtRatioAtTick(tick int) (*big.Int, error) {
  * Returns the sqrt ratio as a Q64.96 for the given tick. The sqrt ratio is computed as sqrt(1.0001)^tick
  * @param tick the tick for which to compute the sqrt ratio
  */
-func GetSqrtRatioAtTickV2(tick int) (*Uint160, error) {
+func GetSqrtRatioAtTickV2(tick int, result *Uint160) error {
 	if tick < MinTick || tick > MaxTick {
-		return nil, ErrInvalidTick
+		return ErrInvalidTick
 	}
 	absTick := tick
 	if tick < 0 {
 		absTick = -tick
 	}
-	var ratio, tmp Uint256
+	var ratio Uint256
 	if absTick&0x1 != 0 {
 		ratio.Set(sqrtConst1)
 	} else {
@@ -141,18 +142,18 @@ func GetSqrtRatioAtTickV2(tick int) (*Uint160, error) {
 		mulShift(&ratio, sqrtConst21)
 	}
 	if tick > 0 {
-		tmp.Div(MaxUint256, &ratio)
-		ratio.Set(&tmp)
+		result.Div(MaxUint256, &ratio)
+		ratio.Set(result)
 	}
 
 	// back to Q96
 	var rem Uint256
-	tmp.DivMod(&ratio, Q32U256, &rem)
+	result.DivMod(&ratio, Q32U256, &rem)
 	if !rem.IsZero() {
-		tmp.AddUint64(&tmp, 1)
-		return &tmp, nil
+		result.AddUint64(result, 1)
+		return nil
 	} else {
-		return &tmp, nil
+		return nil
 	}
 }
 
@@ -216,7 +217,8 @@ func GetTickAtSqrtRatioV2(sqrtRatioX96 *Uint160) (int, error) {
 		return int(tickLow), nil
 	}
 
-	sqrtRatio, err := GetSqrtRatioAtTickV2(int(tickHigh))
+	var sqrtRatio Uint160
+	err = GetSqrtRatioAtTickV2(int(tickHigh), &sqrtRatio)
 	if err != nil {
 		return 0, err
 	}
