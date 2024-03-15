@@ -6,10 +6,10 @@ import (
 	"errors"
 	"math/big"
 
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/constants"
-	"github.com/daoleno/uniswapv3-sdk/entities"
-	"github.com/daoleno/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -43,7 +43,7 @@ type IncreaseSpecificOptions struct {
 	TokenID *big.Int // Indicates the ID of the position to increase liquidity for
 }
 
-//  Options for producing the calldata to add liquidity
+// Options for producing the calldata to add liquidity
 type CommonAddLiquidityOptions struct {
 	SlippageTolerance *core.Percent  // How much the pool price is allowed to move
 	Deadline          *big.Int       // When the transaction expires, in epoch seconds
@@ -143,7 +143,7 @@ type DecreaseLiquidityParams struct {
 
 func encodeCreate(pool *entities.Pool) ([]byte, error) {
 	abi := getNonFungiblePositionManagerABI()
-	return abi.Pack("createAndInitializePoolIfNecessary", pool.Token0.Address, pool.Token1.Address, big.NewInt(int64(pool.Fee)), pool.SqrtRatioX96)
+	return abi.Pack("createAndInitializePoolIfNecessary", pool.Token0.Address, pool.Token1.Address, big.NewInt(int64(pool.Fee)), pool.SqrtRatioX96.ToBig())
 }
 
 func CreateCallParameters(pool *entities.Pool) (*utils.MethodParameters, error) {

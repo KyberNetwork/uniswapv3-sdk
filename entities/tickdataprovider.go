@@ -1,11 +1,14 @@
 package entities
 
-import "math/big"
+import (
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
+	"github.com/holiman/uint256"
+)
 
 type Tick struct {
 	Index          int
-	LiquidityGross *big.Int
-	LiquidityNet   *big.Int
+	LiquidityGross *uint256.Int
+	LiquidityNet   *utils.Int128
 }
 
 // Provides information about ticks

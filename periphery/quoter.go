@@ -7,9 +7,9 @@ import (
 	"math/big"
 	"reflect"
 
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/entities"
+	"github.com/KyberNetwork/uniswapv3-sdk-uint256/utils"
 	core "github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/entities"
-	"github.com/daoleno/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 
