@@ -208,7 +208,6 @@ func FromRoute(route *Route, amount *entities.CurrencyAmount, tradeType entities
 	var (
 		inputAmount  *entities.CurrencyAmount
 		outputAmount *entities.CurrencyAmount
-		err          error
 	)
 	if tradeType == entities.ExactInput {
 		if !amount.Currency.Equal(route.Input) {
@@ -232,11 +231,11 @@ func FromRoute(route *Route, amount *entities.CurrencyAmount, tradeType entities
 		amounts[len(amounts)-1] = amount.Wrapped()
 		for i := len(route.TokenPath) - 1; i > 0; i-- {
 			pool := route.Pools[i-1]
-			inputAmount, _, err = pool.GetInputAmount(amounts[i], nil)
+			getInputAmountResult, err := pool.GetInputAmount(amounts[i], nil)
 			if err != nil {
 				return nil, err
 			}
-			amounts[i-1] = inputAmount
+			amounts[i-1] = getInputAmountResult.ReturnedAmount
 		}
 		inputAmount = entities.FromFractionalAmount(route.Input, amounts[0].Numerator, amounts[0].Denominator)
 		outputAmount = entities.FromFractionalAmount(route.Output, amount.Numerator, amount.Denominator)
@@ -296,11 +295,11 @@ func FromRoutes(wrappedRoutes []*WrappedRoute, tradeType entities.TradeType) (*T
 			amounts[len(amounts)-1] = entities.FromFractionalAmount(route.Output.Wrapped(), amount.Numerator, amount.Denominator)
 			for i := len(route.TokenPath) - 1; i > 0; i-- {
 				pool := route.Pools[i-1]
-				inputAmount, _, err := pool.GetInputAmount(amounts[i], nil)
+				getInputAmountResult, err := pool.GetInputAmount(amounts[i], nil)
 				if err != nil {
 					return nil, err
 				}
-				amounts[i-1] = inputAmount
+				amounts[i-1] = getInputAmountResult.ReturnedAmount
 			}
 			inputAmount = entities.FromFractionalAmount(route.Input, amounts[0].Numerator, amounts[0].Denominator)
 			outputAmount = entities.FromFractionalAmount(route.Output, amount.Numerator, amount.Denominator)
@@ -573,7 +572,7 @@ func BestTradeExactOut(pools []*Pool, currencyIn entities.Currency, currencyAmou
 		if !pool.Token0.Equal(amountOut.Currency) && !pool.Token1.Equal(amountOut.Currency) {
 			continue
 		}
-		amountIn, _, err := pool.GetInputAmount(amountOut, nil)
+		getInputAmountResult, err := pool.GetInputAmount(amountOut, nil)
 		if err != nil {
 			// TODO
 			// not enough liquidity in this pool
@@ -583,7 +582,7 @@ func BestTradeExactOut(pools []*Pool, currencyIn entities.Currency, currencyAmou
 			return nil, err
 		}
 		// we have arrived at the input token, so this is the final trade of one of the paths
-		if amountIn.Currency.Equal(tokenIn) {
+		if getInputAmountResult.ReturnedAmount.Currency.Equal(tokenIn) {
 			r, err := NewRoute(append([]*Pool{pool}, currentPools...), currencyIn, currencyAmountOut.Currency)
 			if err != nil {
 				return nil, err
@@ -602,7 +601,7 @@ func BestTradeExactOut(pools []*Pool, currencyIn entities.Currency, currencyAmou
 			poolsExcludingThisPool = append(poolsExcludingThisPool, pools[i+1:]...)
 
 			// otherwise, consider all the other paths that arrive at this token as long as we have not exceeded maxHops
-			bestTrades, err = BestTradeExactOut(poolsExcludingThisPool, currencyIn, currencyAmountOut, &BestTradeOptions{MaxNumResults: opts.MaxNumResults, MaxHops: opts.MaxHops - 1}, append([]*Pool{pool}, currentPools...), amountIn, bestTrades)
+			bestTrades, err = BestTradeExactOut(poolsExcludingThisPool, currencyIn, currencyAmountOut, &BestTradeOptions{MaxNumResults: opts.MaxNumResults, MaxHops: opts.MaxHops - 1}, append([]*Pool{pool}, currentPools...), getInputAmountResult.ReturnedAmount, bestTrades)
 			if err != nil {
 				return nil, err
 			}

@@ -13,7 +13,9 @@ import (
 
 var (
 	USDC     = entities.NewToken(1, common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"), 6, "USDC", "USD Coin")
+	USDT     = entities.NewToken(1, common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"), 6, "USDT", "Tether USD")
 	DAI      = entities.NewToken(1, common.HexToAddress("0x6B175474E89094C44Da98b954EedeAC495271d0F"), 18, "DAI", "Dai Stablecoin")
+	WETH     = entities.NewToken(1, common.HexToAddress("0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"), 18, "WETH", "Wrapped Ether")
 	OneEther = big.NewInt(1e18)
 )
 
@@ -164,19 +166,74 @@ func TestGetInputAmount(t *testing.T) {
 
 	// USDC -> DAI
 	outputAmount := entities.FromRawAmount(DAI, big.NewInt(98))
-	inputAmount, _, err := pool.GetInputAmount(outputAmount, nil)
+	getInputAmountResult, err := pool.GetInputAmount(outputAmount, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, inputAmount.Currency.Equal(USDC))
-	assert.Equal(t, inputAmount.Quotient(), big.NewInt(100))
+	assert.True(t, getInputAmountResult.ReturnedAmount.Currency.Equal(USDC))
+	assert.Equal(t, getInputAmountResult.ReturnedAmount.Quotient(), big.NewInt(100))
 
 	// DAI -> USDC
 	outputAmount = entities.FromRawAmount(USDC, big.NewInt(98))
-	inputAmount, _, err = pool.GetInputAmount(outputAmount, nil)
+	getInputAmountResult, err = pool.GetInputAmount(outputAmount, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.True(t, inputAmount.Currency.Equal(DAI))
-	assert.Equal(t, inputAmount.Quotient(), big.NewInt(100))
+	assert.True(t, getInputAmountResult.ReturnedAmount.Currency.Equal(DAI))
+	assert.Equal(t, getInputAmountResult.ReturnedAmount.Quotient(), big.NewInt(100))
+}
+
+func newTestBlueprintV3Pool() *Pool {
+	liquidityGross, _ := new(big.Int).SetString("5158244147190", 10)
+	liquidityNet, _ := new(big.Int).SetString("-5158244147190", 10)
+
+	ticksData := []Tick{
+		{
+			Index:          -197760,
+			LiquidityNet:   liquidityGross,
+			LiquidityGross: liquidityGross,
+		},
+		{
+			Index:          -196320,
+			LiquidityNet:   liquidityNet,
+			LiquidityGross: liquidityGross,
+		},
+	}
+
+	ticks, err := NewTickListDataProvider(ticksData, constants.TickSpacings[constants.FeeMedium])
+	if err != nil {
+		panic(err)
+	}
+
+	sqrtPriceX96, _ := new(big.Int).SetString("4736796043499064985766337", 10)
+
+	pool, err := NewPool(
+		WETH,
+		USDT,
+		constants.FeeMedium,
+		sqrtPriceX96,
+		constants.Zero,
+		-194505,
+		ticks,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	return pool
+}
+
+func TestGetInputAmount2(t *testing.T) {
+	blueprintV3Pool := newTestBlueprintV3Pool()
+
+	sqrtPriceLimitX96, _ := new(big.Int).SetString("4025227652667870579138333", 10)
+	// WETH -> USDT
+	outputAmount := entities.FromRawAmount(USDT, big.NewInt(500000000))
+	getInputAmountResult, err := blueprintV3Pool.GetInputAmount(outputAmount, sqrtPriceLimitX96)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.True(t, getInputAmountResult.ReturnedAmount.Currency.Equal(WETH))
+	assert.Equal(t, getInputAmountResult.ReturnedAmount.Quotient(), big.NewInt(7074025631378098))
+	assert.Equal(t, getInputAmountResult.RemainingAmountOut.Quotient(), big.NewInt(-480436293))
 }
