@@ -9,7 +9,7 @@
 ## Installation
 
 ```sh
-go get github.com/daoleno/uniswapv3-sdk
+go get github.com/KyberNetwork/uniswapv3-sdk
 ```
 
 ## Usage
@@ -24,9 +24,9 @@ import (
 	"math/big"
 
 	core "github.com/daoleno/uniswap-sdk-core/entities"
-	"github.com/daoleno/uniswapv3-sdk/constants"
-	"github.com/daoleno/uniswapv3-sdk/entities"
-	"github.com/daoleno/uniswapv3-sdk/utils"
+	"github.com/KyberNetwork/uniswapv3-sdk/constants"
+	"github.com/KyberNetwork/uniswapv3-sdk/entities"
+	"github.com/KyberNetwork/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/common"
 )
 
