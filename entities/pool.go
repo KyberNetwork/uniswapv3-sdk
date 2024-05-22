@@ -1,3 +1,9 @@
+//go:generate go run github.com/tinylib/msgp -unexported -tests=false -v
+//msgp:tuple Pool
+//msgp:shim *big.Int as:[]byte using:msgpencode.EncodeInt/msgpencode.DecodeInt
+//msgp:shim constants.FeeAmount as:uint64 using:uint64/constants.FeeAmount
+//msgp:ignore StepComputations SwapResult GetOutputAmountResult GetInputAmountResult TickDataProvider
+
 package entities
 
 import (
@@ -36,7 +42,7 @@ type Pool struct {
 	SqrtRatioX96     *big.Int
 	Liquidity        *big.Int
 	TickCurrent      int
-	TickDataProvider TickDataProvider
+	TickDataProvider *TickListDataProvider
 
 	token0Price *entities.Price
 	token1Price *entities.Price
@@ -107,6 +113,16 @@ func NewPool(tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX
 		token1 = tokenA
 	}
 
+	var tickListDataProvider *TickListDataProvider
+	if ticks != nil {
+		switch ticks := ticks.(type) {
+		case *TickListDataProvider:
+			tickListDataProvider = ticks
+		default:
+			return nil, errors.New("unsupported TickDataProvider concrete type")
+		}
+	}
+
 	return &Pool{
 		Token0:           token0,
 		Token1:           token1,
@@ -114,7 +130,7 @@ func NewPool(tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX
 		SqrtRatioX96:     sqrtRatioX96,
 		Liquidity:        liquidity,
 		TickCurrent:      tickCurrent,
-		TickDataProvider: ticks, // TODO: new tick data provider
+		TickDataProvider: tickListDataProvider,
 	}, nil
 }
 

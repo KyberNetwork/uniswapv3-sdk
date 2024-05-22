@@ -1,0 +1,16 @@
+on: [push, pull_request]
+name: Check go generate
+jobs:
+  go-generate-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: 'go.mod'
+      - name: Run go generate
+        run: go generate ./...
+      - name: Check working tree clean
+        run: if [ -z "$(git status --porcelain)" ]; then exit 0; else exit 1; fi
