@@ -114,7 +114,7 @@ func (z *Pool) DecodeMsg(dc *msgp.Reader) (err error) {
 		z.TickDataProvider = nil
 	} else {
 		if z.TickDataProvider == nil {
-			z.TickDataProvider = new(TickListDataProvider)
+			z.TickDataProvider = new(TickDataProviderWrapper)
 		}
 		err = z.TickDataProvider.DecodeMsg(dc)
 		if err != nil {
@@ -428,7 +428,7 @@ func (z *Pool) UnmarshalMsg(bts []byte) (o []byte, err error) {
 		z.TickDataProvider = nil
 	} else {
 		if z.TickDataProvider == nil {
-			z.TickDataProvider = new(TickListDataProvider)
+			z.TickDataProvider = new(TickDataProviderWrapper)
 		}
 		bts, err = z.TickDataProvider.UnmarshalMsg(bts)
 		if err != nil {

@@ -42,7 +42,7 @@ type Pool struct {
 	SqrtRatioX96     *big.Int
 	Liquidity        *big.Int
 	TickCurrent      int
-	TickDataProvider *TickListDataProvider
+	TickDataProvider *TickDataProviderWrapper
 
 	token0Price *entities.Price
 	token1Price *entities.Price
@@ -113,16 +113,6 @@ func NewPool(tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX
 		token1 = tokenA
 	}
 
-	var tickListDataProvider *TickListDataProvider
-	if ticks != nil {
-		switch ticks := ticks.(type) {
-		case *TickListDataProvider:
-			tickListDataProvider = ticks
-		default:
-			return nil, errors.New("unsupported TickDataProvider concrete type")
-		}
-	}
-
 	return &Pool{
 		Token0:           token0,
 		Token1:           token1,
@@ -130,7 +120,7 @@ func NewPool(tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX
 		SqrtRatioX96:     sqrtRatioX96,
 		Liquidity:        liquidity,
 		TickCurrent:      tickCurrent,
-		TickDataProvider: tickListDataProvider,
+		TickDataProvider: NewTickDataProviderWrapper(ticks),
 	}, nil
 }
 
@@ -209,7 +199,7 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 		swapResult.sqrtRatioX96,
 		swapResult.liquidity,
 		swapResult.currentTick,
-		p.TickDataProvider,
+		p.TickDataProvider.Get(),
 	)
 	if err != nil {
 		return nil, err
@@ -252,7 +242,7 @@ func (p *Pool) GetInputAmount(outputAmount *entities.CurrencyAmount, sqrtPriceLi
 		swapResult.sqrtRatioX96,
 		swapResult.liquidity,
 		swapResult.currentTick,
-		p.TickDataProvider,
+		p.TickDataProvider.Get(),
 	)
 	if err != nil {
 		return nil, err
