@@ -140,6 +140,8 @@ func (p *TickDataProviderWrapper) UnmarshalMsg(bts []byte) (o []byte, err error)
 		return
 	}
 	p.TickDataProvider = providerVal.Interface().(TickDataProvider)
+
+	o = bts
 	return
 }
 
