@@ -1,9 +1,3 @@
-//go:generate go run github.com/tinylib/msgp -unexported -tests=false -v
-//msgp:tuple Pool
-//msgp:shim *big.Int as:[]byte using:msgpencode.EncodeInt/msgpencode.DecodeInt
-//msgp:shim constants.FeeAmount as:uint64 using:uint64/constants.FeeAmount
-//msgp:ignore StepComputations SwapResult GetOutputAmountResult GetInputAmountResult TickDataProvider
-
 package entities
 
 import (
@@ -42,7 +36,7 @@ type Pool struct {
 	SqrtRatioX96     *big.Int
 	Liquidity        *big.Int
 	TickCurrent      int
-	TickDataProvider *TickDataProviderWrapper
+	TickDataProvider TickDataProvider
 
 	token0Price *entities.Price
 	token1Price *entities.Price
@@ -120,7 +114,7 @@ func NewPool(tokenA, tokenB *entities.Token, fee constants.FeeAmount, sqrtRatioX
 		SqrtRatioX96:     sqrtRatioX96,
 		Liquidity:        liquidity,
 		TickCurrent:      tickCurrent,
-		TickDataProvider: NewTickDataProviderWrapper(ticks),
+		TickDataProvider: ticks, // TODO: new tick data provider
 	}, nil
 }
 
@@ -199,7 +193,7 @@ func (p *Pool) GetOutputAmount(inputAmount *entities.CurrencyAmount, sqrtPriceLi
 		swapResult.sqrtRatioX96,
 		swapResult.liquidity,
 		swapResult.currentTick,
-		p.TickDataProvider.Get(),
+		p.TickDataProvider,
 	)
 	if err != nil {
 		return nil, err
@@ -242,7 +236,7 @@ func (p *Pool) GetInputAmount(outputAmount *entities.CurrencyAmount, sqrtPriceLi
 		swapResult.sqrtRatioX96,
 		swapResult.liquidity,
 		swapResult.currentTick,
-		p.TickDataProvider.Get(),
+		p.TickDataProvider,
 	)
 	if err != nil {
 		return nil, err

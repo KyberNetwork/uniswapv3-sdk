@@ -1,7 +1,6 @@
 package entities
 
 import (
-	"bytes"
 	"math/big"
 	"testing"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/daoleno/uniswapv3-sdk/utils"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
-	"github.com/tinylib/msgp/msgp"
 )
 
 var (
@@ -238,24 +236,4 @@ func TestGetInputAmount2(t *testing.T) {
 	assert.True(t, getInputAmountResult.ReturnedAmount.Currency.Equal(WETH))
 	assert.Equal(t, getInputAmountResult.ReturnedAmount.Quotient(), big.NewInt(7074025631378098))
 	assert.Equal(t, getInputAmountResult.RemainingAmountOut.Quotient(), big.NewInt(-480436293))
-}
-
-func TestPoolMsgpEndecode(t *testing.T) {
-	poolWithNilProvider := newTestPool()
-	poolWithNilProvider.TickDataProvider = nil
-	pools := []*Pool{
-		newTestPool(),
-		poolWithNilProvider,
-	}
-	for _, pool := range pools {
-		encoded := new(bytes.Buffer)
-		err := msgp.Encode(encoded, pool)
-		assert.NoError(t, err)
-
-		decoded := new(Pool)
-		err = msgp.Decode(encoded, decoded)
-		assert.NoError(t, err)
-
-		assert.EqualValues(t, pool, decoded)
-	}
 }
