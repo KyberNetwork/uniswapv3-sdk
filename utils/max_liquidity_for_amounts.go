@@ -33,7 +33,7 @@ func maxLiquidityForAmount0Imprecise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.
  * @param amount0 The token0 amount
  * @returns liquidity for amount0, precise
  */
-func maxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.Int) *big.Int {
+func MaxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.Int) *big.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
@@ -49,7 +49,7 @@ func maxLiquidityForAmount0Precise(sqrtRatioAX96, sqrtRatioBX96, amount0 *big.In
  * @param amount1 The token1 amount
  * @returns liquidity for amount1
  */
-func maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1 *big.Int) *big.Int {
+func MaxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1 *big.Int) *big.Int {
 	if sqrtRatioAX96.Cmp(sqrtRatioBX96) > 0 {
 		sqrtRatioAX96, sqrtRatioBX96 = sqrtRatioBX96, sqrtRatioAX96
 	}
@@ -73,7 +73,7 @@ func MaxLiquidityForAmounts(sqrtRatioCurrentX96 *big.Int, sqrtRatioAX96, sqrtRat
 	}
 	var maxLiquidityForAmount0 func(*big.Int, *big.Int, *big.Int) *big.Int
 	if useFullPrecision {
-		maxLiquidityForAmount0 = maxLiquidityForAmount0Precise
+		maxLiquidityForAmount0 = MaxLiquidityForAmount0Precise
 	} else {
 		maxLiquidityForAmount0 = maxLiquidityForAmount0Imprecise
 	}
@@ -81,13 +81,13 @@ func MaxLiquidityForAmounts(sqrtRatioCurrentX96 *big.Int, sqrtRatioAX96, sqrtRat
 		return maxLiquidityForAmount0(sqrtRatioAX96, sqrtRatioBX96, amount0)
 	} else if sqrtRatioCurrentX96.Cmp(sqrtRatioBX96) < 0 {
 		liquidity0 := maxLiquidityForAmount0(sqrtRatioCurrentX96, sqrtRatioBX96, amount0)
-		liquidity1 := maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioCurrentX96, amount1)
+		liquidity1 := MaxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioCurrentX96, amount1)
 		if liquidity0.Cmp(liquidity1) < 0 {
 			return liquidity0
 		}
 		return liquidity1
 
 	} else {
-		return maxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1)
+		return MaxLiquidityForAmount1(sqrtRatioAX96, sqrtRatioBX96, amount1)
 	}
 }
